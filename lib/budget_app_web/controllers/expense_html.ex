@@ -13,22 +13,22 @@ defmodule BudgetAppWeb.ExpenseHTML do
     <.form for={@form} id="expense-form" action={@action}>
       <div class="grid gap-4 md:grid-cols-2">
         <.input field={@form[:date]} type="date" label="Date" />
-        <.input field={@form[:amount]} type="number" step="0.01" label="Amount" />
-        <.input field={@form[:currency]} type="text" maxlength="3" label="Currency" />
-        <.input field={@form[:created_by]} type="text" label="Created by" />
+        <.input field={@form[:amount]} type="number" step="0.01" label="Montant" />
+        <.input field={@form[:currency]} type="text" maxlength="3" label="Devise" />
+        <.input field={@form[:created_by]} type="text" label="Créé par" />
       </div>
 
       <.input
         field={@form[:category_id]}
         type="select"
-        label="Category"
+        label="Catégorie"
         options={@category_options}
-        prompt="Choose a category"
+        prompt="Choisissez une catégorie"
       />
 
       <footer class="mt-6 flex flex-wrap gap-3">
-        <.button variant="primary">Save expense</.button>
-        <.button :if={@return_to} navigate={@return_to}>Cancel</.button>
+        <.button variant="primary">Enregistrer la dépense</.button>
+        <.button :if={@return_to} navigate={@return_to}>Annuler</.button>
       </footer>
     </.form>
     """

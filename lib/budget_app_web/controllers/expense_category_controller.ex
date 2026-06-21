@@ -18,7 +18,7 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
     case Expenses.create_expense_category(expense_category_params) do
       {:ok, expense_category} ->
         conn
-        |> put_flash(:info, "Category created successfully.")
+        |> put_flash(:info, "Catégorie créée avec succès.")
         |> redirect(to: ~p"/categories/#{expense_category}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -47,7 +47,7 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
     case Expenses.update_expense_category(category, expense_category_params) do
       {:ok, category} ->
         conn
-        |> put_flash(:info, "Category updated successfully.")
+        |> put_flash(:info, "Catégorie mise à jour avec succès.")
         |> redirect(to: ~p"/categories/#{category}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -64,12 +64,12 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
     case Expenses.delete_expense_category(category) do
       {:ok, _category} ->
         conn
-        |> put_flash(:info, "Category deleted successfully.")
+        |> put_flash(:info, "Catégorie supprimée avec succès.")
         |> redirect(to: ~p"/categories")
 
       {:error, %Ecto.Changeset{}} ->
         conn
-        |> put_flash(:error, "Category could not be deleted because expenses still reference it.")
+        |> put_flash(:error, "La catégorie n'a pas pu être supprimée car des dépenses y font encore référence.")
         |> redirect(to: ~p"/categories/#{category}")
     end
   end

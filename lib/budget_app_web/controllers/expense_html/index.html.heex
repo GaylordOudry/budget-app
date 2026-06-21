@@ -1,29 +1,28 @@
 <Layouts.app flash={@flash}>
   <.header>
-    Listing expenses
-    <:subtitle>Review, create, and manage tracked expenses.</:subtitle>
+    Liste des dépenses
     <:actions>
       <.button navigate={~p"/expenses/new"}>
-        <.icon name="hero-plus" /> New expense
+        <.icon name="hero-plus" /> Nouvelle dépense
       </.button>
     </:actions>
   </.header>
 
   <.table id="expenses" rows={@expenses} row_click={&JS.navigate(~p"/expenses/#{&1}")}>
     <:col :let={expense} label="Date">{expense.date}</:col>
-    <:col :let={expense} label="Amount">{Decimal.to_string(expense.amount, :normal)}</:col>
-    <:col :let={expense} label="Currency">{expense.currency}</:col>
-    <:col :let={expense} label="Category">{expense.category.name}</:col>
-    <:col :let={expense} label="Created by">{expense.created_by}</:col>
+    <:col :let={expense} label="Montant">{Decimal.to_string(expense.amount, :normal)}</:col>
+    <:col :let={expense} label="Devise">{expense.currency}</:col>
+    <:col :let={expense} label="Catégorie">{expense.category.name}</:col>
+    <:col :let={expense} label="Créé par">{expense.created_by}</:col>
     <:action :let={expense}>
       <div class="sr-only">
-        <.link navigate={~p"/expenses/#{expense}"}>Show</.link>
+        <.link navigate={~p"/expenses/#{expense}"}>Afficher</.link>
       </div>
-      <.link navigate={~p"/expenses/#{expense}/edit"}>Edit</.link>
+      <.link navigate={~p"/expenses/#{expense}/edit"}>Modifier</.link>
     </:action>
     <:action :let={expense}>
-      <.link href={~p"/expenses/#{expense}"} method="delete" data-confirm="Are you sure?">
-        Delete
+      <.link href={~p"/expenses/#{expense}"} method="delete" data-confirm="Êtes-vous sûr ?">
+        Supprimer
       </.link>
     </:action>
   </.table>

@@ -10,11 +10,11 @@ defmodule BudgetAppWeb.ExpenseCategoryHTML do
   def expense_category_form(assigns) do
     ~H"""
     <.form for={@form} id="expense-category-form" action={@action}>
-      <.input field={@form[:name]} type="text" label="Name" />
+      <.input field={@form[:name]} type="text" label="Nom" />
 
       <footer class="mt-6 flex flex-wrap gap-3">
-        <.button variant="primary">Save category</.button>
-        <.button :if={@return_to} navigate={@return_to}>Cancel</.button>
+        <.button variant="primary">Enregistrer la catégorie</.button>
+        <.button :if={@return_to} navigate={@return_to}>Annuler</.button>
       </footer>
     </.form>
     """

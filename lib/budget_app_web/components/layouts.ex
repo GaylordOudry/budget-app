@@ -37,27 +37,15 @@ defmodule BudgetAppWeb.Layouts do
   def app(assigns) do
     assigns =
       assign(assigns, :navigation_items, [
-        %{label: "Expenses", path: ~p"/expenses"},
-        %{label: "Incomes", path: ~p"/incomes"},
-        %{label: "Categories", path: ~p"/categories"}
+        %{label: "Dépenses", path: ~p"/expenses"},
+        %{label: "Revenus", path: ~p"/incomes"},
+        %{label: "Catégories", path: ~p"/categories"}
       ])
 
     ~H"""
     <div class="min-h-screen bg-base-200/30">
-      <header class="border-b border-base-300 bg-base-100/90 shadow-sm backdrop-blur">
-        <div class="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div class="space-y-1">
-            <.link
-              navigate={~p"/expenses"}
-              class="text-lg font-semibold tracking-tight text-base-content transition hover:text-primary"
-            >
-              BudgetApp
-            </.link>
-            <p class="text-sm text-base-content/70">
-              Move quickly between your incomes, expenses, and categories.
-            </p>
-          </div>
-
+      <header class="border-b border-base-300 bg-base-100/90">
+        <div class="mx-auto flex flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-end lg:px-8">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <nav
               id="app-navigation"

@@ -18,7 +18,7 @@ defmodule BudgetAppWeb.IncomeController do
     case Incomes.create_income(income_params) do
       {:ok, income} ->
         conn
-        |> put_flash(:info, "Income created successfully.")
+        |> put_flash(:info, "Revenu créé avec succès.")
         |> redirect(to: ~p"/incomes/#{income}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -47,7 +47,7 @@ defmodule BudgetAppWeb.IncomeController do
     case Incomes.update_income(income, income_params) do
       {:ok, income} ->
         conn
-        |> put_flash(:info, "Income updated successfully.")
+        |> put_flash(:info, "Revenu mis à jour avec succès.")
         |> redirect(to: ~p"/incomes/#{income}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -63,7 +63,7 @@ defmodule BudgetAppWeb.IncomeController do
     {:ok, _income} = Incomes.delete_income(income)
 
     conn
-    |> put_flash(:info, "Income deleted successfully.")
+    |> put_flash(:info, "Revenu supprimé avec succès.")
     |> redirect(to: ~p"/incomes")
   end
 end

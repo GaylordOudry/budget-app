@@ -20,8 +20,7 @@ defmodule BudgetAppWeb.UserAuth do
     |> renew_session()
     |> put_token_in_session(token)
     |> maybe_write_remember_me_cookie(token, params)
-    |> assign(:current_scope, Scope.for_user(user))
-    |> assign(:current_user, user)
+    |> assign_scope_for_user(user)
     |> redirect(to: user_return_to || signed_in_path(conn))
   end
 
@@ -33,8 +32,7 @@ defmodule BudgetAppWeb.UserAuth do
     conn
     |> renew_session()
     |> delete_resp_cookie(@remember_me_cookie, @remember_me_options)
-    |> assign(:current_scope, nil)
-    |> assign(:current_user, nil)
+    |> assign_scope_for_user(nil)
     |> redirect(to: ~p"/")
   end
 
@@ -43,21 +41,16 @@ defmodule BudgetAppWeb.UserAuth do
       {token, conn} ->
         case Users.get_user_by_session_token(token) do
           {user, _inserted_at} ->
-            conn
-            |> assign(:current_scope, Scope.for_user(user))
-            |> assign(:current_user, user)
+            assign_scope_for_user(conn, user)
 
           nil ->
             conn
             |> delete_session(:user_token)
-            |> assign(:current_scope, nil)
-            |> assign(:current_user, nil)
+            |> assign_scope_for_user(nil)
         end
 
       {nil, conn} ->
-        conn
-        |> assign(:current_scope, nil)
-        |> assign(:current_user, nil)
+        assign_scope_for_user(conn, nil)
     end
   end
 
@@ -122,4 +115,10 @@ defmodule BudgetAppWeb.UserAuth do
   defp maybe_store_return_to(conn), do: conn
 
   defp signed_in_path(_conn), do: ~p"/expenses"
+
+  defp assign_scope_for_user(conn, user) do
+    conn
+    |> assign(:current_scope, Scope.for_user(user))
+    |> assign(:current_user, user)
+  end
 end

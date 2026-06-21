@@ -37,9 +37,7 @@ defmodule BudgetAppWeb.Layouts do
 
   def app(assigns) do
     assigns =
-      assigns
-      |> assign(:current_user, assigns.current_user || (assigns.current_scope && assigns.current_scope.user))
-      |> then(&assign(&1, :navigation_items, navigation_items(&1.current_user)))
+      assign(assigns, :navigation_items, navigation_items(assigns.current_user))
 
     ~H"""
     <div class="min-h-screen bg-base-200/30">

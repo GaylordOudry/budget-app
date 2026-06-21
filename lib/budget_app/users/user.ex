@@ -2,6 +2,8 @@ defmodule BudgetApp.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias BudgetApp.Users
+
   schema "users" do
     field :name, :string
     field :email, :string
@@ -17,7 +19,7 @@ defmodule BudgetApp.Users.User do
     user
     |> cast(attrs, [:name, :email, :password])
     |> update_change(:name, &String.trim/1)
-    |> update_change(:email, &normalize_email/1)
+    |> update_change(:email, &Users.normalize_email/1)
     |> validate_required([:name])
     |> validate_length(:name, min: 1, max: 100)
     |> unsafe_validate_unique(:name, BudgetApp.Repo)
@@ -31,8 +33,8 @@ defmodule BudgetApp.Users.User do
     changeset =
       changeset
       |> validate_required([:email])
-      |> validate_format(:email, ~r/^[^@,;\s]+@[^@,;\s]+$/,
-        message: "must have the @ sign and no spaces"
+      |> validate_format(:email, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: "must be a valid email address"
       )
       |> validate_length(:email, max: 160)
 
@@ -75,12 +77,6 @@ defmodule BudgetApp.Users.User do
     else
       changeset
     end
-  end
-
-  defp normalize_email(email) do
-    email
-    |> String.trim()
-    |> String.downcase()
   end
 
   def valid_password?(%__MODULE__{hashed_password: hashed_password}, password)

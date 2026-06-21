@@ -9,6 +9,12 @@ defmodule BudgetApp.Users do
   alias BudgetApp.Users.User
   alias BudgetApp.Users.UserToken
 
+  def normalize_email(email) when is_binary(email) do
+    email
+    |> String.trim()
+    |> String.downcase()
+  end
+
   def get_user!(id), do: Repo.get!(User, id)
 
   def get_user_by_email(email) when is_binary(email) do
@@ -49,11 +55,5 @@ defmodule BudgetApp.Users do
     )
 
     :ok
-  end
-
-  defp normalize_email(email) do
-    email
-    |> String.trim()
-    |> String.downcase()
   end
 end

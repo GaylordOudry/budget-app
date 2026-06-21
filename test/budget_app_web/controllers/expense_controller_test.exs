@@ -20,7 +20,9 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
   describe "index" do
     test "lists all expenses", %{conn: conn} do
       conn = get(conn, ~p"/expenses")
-      assert html_response(conn, 200) =~ "Listing expenses"
+      response = html_response(conn, 200)
+      assert response =~ "Listing expenses"
+      assert_navigation_menu(response)
     end
   end
 
@@ -102,5 +104,12 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
   defp create_expense(_) do
     expense = expense_fixture()
     %{expense: expense}
+  end
+
+  defp assert_navigation_menu(response) do
+    assert response =~ ~s(id="app-navigation")
+    assert response =~ ~s(href="/expenses")
+    assert response =~ ~s(href="/incomes")
+    assert response =~ ~s(href="/categories")
   end
 end

@@ -20,7 +20,9 @@ defmodule BudgetAppWeb.IncomeControllerTest do
   describe "index" do
     test "lists all incomes", %{conn: conn} do
       conn = get(conn, ~p"/incomes")
-      assert html_response(conn, 200) =~ "Listing incomes"
+      response = html_response(conn, 200)
+      assert response =~ "Listing incomes"
+      assert_navigation_menu(response)
     end
   end
 
@@ -94,5 +96,12 @@ defmodule BudgetAppWeb.IncomeControllerTest do
   defp create_income(_) do
     income = income_fixture()
     %{income: income}
+  end
+
+  defp assert_navigation_menu(response) do
+    assert response =~ ~s(id="app-navigation")
+    assert response =~ ~s(href="/expenses")
+    assert response =~ ~s(href="/incomes")
+    assert response =~ ~s(href="/categories")
   end
 end

@@ -10,7 +10,9 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
   describe "index" do
     test "lists all categories", %{conn: conn} do
       conn = get(conn, ~p"/categories")
-      assert html_response(conn, 200) =~ "Listing categories"
+      response = html_response(conn, 200)
+      assert response =~ "Listing categories"
+      assert_navigation_menu(response)
     end
   end
 
@@ -91,5 +93,12 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
   defp create_category(_) do
     category = expense_category_fixture()
     %{category: category}
+  end
+
+  defp assert_navigation_menu(response) do
+    assert response =~ ~s(id="app-navigation")
+    assert response =~ ~s(href="/expenses")
+    assert response =~ ~s(href="/incomes")
+    assert response =~ ~s(href="/categories")
   end
 end

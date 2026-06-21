@@ -49,9 +49,9 @@ defmodule BudgetApp.Users.User do
     changeset
     |> validate_required([:password])
     |> validate_length(:password,
-      min: 12,
+      min: 8,
       max: 72,
-      message: "must be between 12 and 72 characters"
+      message: "must be between 8 and 72 characters"
     )
     |> maybe_hash_password(opts)
   end

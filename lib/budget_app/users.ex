@@ -28,13 +28,9 @@ defmodule BudgetApp.Users do
     |> Repo.insert()
   end
 
-  def create_user(attrs \\ %{}), do: register_user(attrs)
-
   def change_user_registration(%User{} = user, attrs \\ %{}) do
     User.registration_changeset(user, attrs, hash_password: false)
   end
-
-  def change_user(%User{} = user, attrs \\ %{}), do: change_user_registration(user, attrs)
 
   def generate_user_session_token(user) do
     {token, user_token} = UserToken.build_session_token(user)

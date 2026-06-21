@@ -1,6 +1,7 @@
 defmodule BudgetAppWeb.UserAuth do
   use BudgetAppWeb, :verified_routes
 
+  import BudgetAppWeb.Gettext
   import Phoenix.Controller
   import Plug.Conn
 
@@ -75,7 +76,7 @@ defmodule BudgetAppWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "Connectez-vous pour accéder à cette page.")
+      |> put_flash(:error, gettext("Connectez-vous pour accéder à cette page."))
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users")
       |> halt()

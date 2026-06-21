@@ -33,7 +33,7 @@ defmodule BudgetApp.Users.User do
     changeset =
       changeset
       |> validate_required([:email])
-      |> validate_format(:email, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    |> validate_format(:email, ~r/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/,
         message: "must be a valid email address"
       )
       |> validate_length(:email, max: 160)

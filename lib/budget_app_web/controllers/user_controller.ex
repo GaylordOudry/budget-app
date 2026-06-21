@@ -14,7 +14,7 @@ defmodule BudgetAppWeb.UserController do
   end
 
   def index(conn, _params) do
-    render(conn, :index, registration_form: new_registration_form(), login_form: login_form())
+    render(conn, :index, registration_form: new_registration_form(), login_form: build_login_form())
   end
 
   def create(conn, %{"user" => user_params}) do
@@ -27,7 +27,7 @@ defmodule BudgetAppWeb.UserController do
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, :index,
           registration_form: Phoenix.Component.to_form(changeset),
-          login_form: login_form(%{"email" => Map.get(user_params, "email", "")})
+          login_form: build_login_form(%{"email" => Map.get(user_params, "email", "")})
         )
     end
   end
@@ -42,7 +42,7 @@ defmodule BudgetAppWeb.UserController do
       |> put_flash(:error, "Email ou mot de passe invalide.")
       |> render(:index,
         registration_form: new_registration_form(),
-        login_form: login_form(%{"email" => email})
+        login_form: build_login_form(%{"email" => email})
       )
     end
   end
@@ -57,7 +57,7 @@ defmodule BudgetAppWeb.UserController do
     Phoenix.Component.to_form(Users.change_user_registration(%User{}))
   end
 
-  defp login_form(params \\ %{}) do
+  defp build_login_form(params \\ %{}) do
     Phoenix.Component.to_form(params, as: :user)
   end
 end

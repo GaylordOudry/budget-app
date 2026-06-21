@@ -16,6 +16,8 @@ defmodule BudgetAppWeb.Router do
 
   scope "/", BudgetAppWeb do
     pipe_through :browser
+
+    resources "/expenses", ExpenseController
   end
 
   # Other scopes may use custom stacks.

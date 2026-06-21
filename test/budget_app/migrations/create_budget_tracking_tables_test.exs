@@ -38,6 +38,9 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
              "foreign_table_name" => "expense_categories",
              "foreign_column_name" => "id"
            } in foreign_keys("expenses")
+
+    assert has_index?("expenses", "(category_id)")
+    assert has_index?("expenses", "(created_by, date)")
   end
 
   test "incomes include the required budget tracking fields" do
@@ -54,6 +57,36 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
 
     assert columns["created_by"]["data_type"] == "character varying"
     assert columns["created_by"]["is_nullable"] == "NO"
+
+    assert has_index?("incomes", "(created_by, date)")
+  end
+
+  test "expense categories cannot be deleted while expenses still reference them" do
+    category_id =
+      SQL.query!(
+        Repo,
+        """
+        INSERT INTO expense_categories (name, inserted_at, updated_at)
+        VALUES ($1, NOW(), NOW())
+        RETURNING id
+        """,
+        ["Housing"]
+      ).rows
+      |> List.first()
+      |> List.first()
+
+    SQL.query!(
+      Repo,
+      """
+      INSERT INTO expenses (date, amount, currency, created_by, category_id, inserted_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      """,
+      [~D[2026-06-21], Decimal.new("125.50"), "EUR", "owner", category_id]
+    )
+
+    assert_raise Postgrex.Error, fn ->
+      SQL.query!(Repo, "DELETE FROM expense_categories WHERE id = $1", [category_id])
+    end
   end
 
   defp column_details(table_name) do
@@ -115,6 +148,10 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
       )
 
     Enum.map(result.rows, fn [index_definition] -> index_definition end)
+  end
+
+  defp has_index?(table_name, column_fragment) do
+    Enum.any?(index_definitions(table_name), &String.contains?(&1, column_fragment))
   end
 
   defp row_to_map(columns, row) do

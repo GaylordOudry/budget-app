@@ -8,7 +8,8 @@ defmodule BudgetAppWeb.UserAuth do
   alias BudgetApp.Users
   alias BudgetApp.Users.Scope
 
-  @max_cookie_age 14 * 24 * 60 * 60
+  @seconds_per_day 24 * 60 * 60
+  @max_cookie_age 14 * @seconds_per_day
   @remember_me_cookie "_budget_app_user_remember_me"
   @remember_me_options [sign: true, max_age: @max_cookie_age, same_site: "Lax"]
 

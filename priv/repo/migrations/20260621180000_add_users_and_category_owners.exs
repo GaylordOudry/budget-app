@@ -5,7 +5,7 @@ defmodule BudgetApp.Repo.Migrations.AddUsersAndCategoryOwners do
     create table(:users) do
       add :name, :string, null: false
       add :email, :string, null: false
-      add :hashed_password, :string
+      add :hashed_password, :string, null: false
       add :confirmed_at, :utc_datetime
 
       timestamps(type: :utc_datetime)

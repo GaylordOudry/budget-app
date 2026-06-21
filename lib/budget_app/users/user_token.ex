@@ -4,6 +4,7 @@ defmodule BudgetApp.Users.UserToken do
 
   alias BudgetApp.Users.UserToken
 
+  # 32 bytes gives 256 bits of entropy for session tokens.
   @rand_size 32
   @session_validity_in_days 14
 

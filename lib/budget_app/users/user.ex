@@ -4,6 +4,8 @@ defmodule BudgetApp.Users.User do
 
   alias BudgetApp.Users
 
+  @email_regex ~r/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/
+
   schema "users" do
     field :name, :string
     field :email, :string
@@ -33,7 +35,7 @@ defmodule BudgetApp.Users.User do
     changeset =
       changeset
       |> validate_required([:email])
-    |> validate_format(:email, ~r/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/,
+    |> validate_format(:email, @email_regex,
         message: "must be a valid email address"
       )
       |> validate_length(:email, max: 160)

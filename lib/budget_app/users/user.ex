@@ -48,7 +48,11 @@ defmodule BudgetApp.Users.User do
   defp validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
-    |> validate_length(:password, min: 12, max: 72)
+    |> validate_length(:password,
+      min: 12,
+      max: 72,
+      message: "must be between 12 and 72 characters"
+    )
     |> maybe_hash_password(opts)
   end
 

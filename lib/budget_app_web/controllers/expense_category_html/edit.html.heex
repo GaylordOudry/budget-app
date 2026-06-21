@@ -1,0 +1,12 @@
+<Layouts.app flash={@flash}>
+  <.header>
+    Edit category {@category.id}
+    <:subtitle>Use this form to manage expense categories in your database.</:subtitle>
+  </.header>
+
+  <.expense_category_form
+    form={@form}
+    action={~p"/categories/#{@category}"}
+    return_to={~p"/categories"}
+  />
+</Layouts.app>

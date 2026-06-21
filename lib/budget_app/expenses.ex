@@ -56,6 +56,27 @@ defmodule BudgetApp.Expenses do
     |> Repo.insert()
   end
 
+  def get_expense_category!(id) do
+    Repo.get!(ExpenseCategory, id)
+  end
+
+  def update_expense_category(%ExpenseCategory{} = expense_category, attrs) do
+    expense_category
+    |> ExpenseCategory.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_expense_category(%ExpenseCategory{} = expense_category) do
+    expense_category
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.no_assoc_constraint(:expenses)
+    |> Repo.delete()
+  end
+
+  def change_expense_category(%ExpenseCategory{} = expense_category, attrs \\ %{}) do
+    ExpenseCategory.changeset(expense_category, attrs)
+  end
+
   defp preload_expense_category({:ok, %Expense{} = expense}) do
     {:ok, Repo.preload(expense, :category)}
   end

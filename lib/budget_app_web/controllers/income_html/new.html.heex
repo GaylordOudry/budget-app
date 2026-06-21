@@ -1,0 +1,12 @@
+<Layouts.app flash={@flash}>
+  <.header>
+    New income
+    <:subtitle>Use this form to manage income records in your database.</:subtitle>
+  </.header>
+
+  <.income_form
+    form={@form}
+    action={~p"/incomes"}
+    return_to={~p"/incomes"}
+  />
+</Layouts.app>

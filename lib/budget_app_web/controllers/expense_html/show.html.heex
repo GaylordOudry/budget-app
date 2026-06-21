@@ -1,0 +1,22 @@
+<Layouts.app flash={@flash}>
+  <.header>
+    Expense {@expense.id}
+    <:subtitle>This is an expense record from your database.</:subtitle>
+    <:actions>
+      <.button navigate={~p"/expenses"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.button variant="primary" navigate={~p"/expenses/#{@expense}/edit"}>
+        <.icon name="hero-pencil-square" /> Edit expense
+      </.button>
+    </:actions>
+  </.header>
+
+  <.list>
+    <:item title="Date">{@expense.date}</:item>
+    <:item title="Amount">{Decimal.to_string(@expense.amount, :normal)}</:item>
+    <:item title="Currency">{@expense.currency}</:item>
+    <:item title="Category">{@expense.category.name}</:item>
+    <:item title="Created by">{@expense.created_by}</:item>
+  </.list>
+</Layouts.app>

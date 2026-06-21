@@ -36,7 +36,8 @@ defmodule BudgetAppWeb.Layouts do
   def app(assigns) do
     ~H"""
     <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+      <div class="mx-auto max-w-5xl space-y-6">
+        <.flash_group flash={@flash} />
         {render_slot(@inner_block)}
       </div>
     </main>

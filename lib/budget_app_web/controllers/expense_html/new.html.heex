@@ -1,0 +1,13 @@
+<Layouts.app flash={@flash}>
+  <.header>
+    New expense
+    <:subtitle>Use this form to manage expense records in your database.</:subtitle>
+  </.header>
+
+  <.expense_form
+    form={@form}
+    action={~p"/expenses"}
+    return_to={~p"/expenses"}
+    category_options={@category_options}
+  />
+</Layouts.app>

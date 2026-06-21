@@ -11,7 +11,7 @@ defmodule BudgetApp.Expenses do
 
   def list_expenses do
     Expense
-    |> order_by([expense], desc: expense.date, desc: expense.id)
+    |> order_by([expense], [desc: expense.date, desc: expense.id])
     |> preload(:category)
     |> Repo.all()
   end

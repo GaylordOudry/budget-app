@@ -27,6 +27,8 @@ defmodule BudgetApp.Expenses.Expense do
     |> assoc_constraint(:category)
   end
 
+  defp normalize_currency(nil), do: nil
+
   defp normalize_currency(currency) do
     currency
     |> String.trim()

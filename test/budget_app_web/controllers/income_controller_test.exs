@@ -20,7 +20,9 @@ defmodule BudgetAppWeb.IncomeControllerTest do
   describe "index" do
     test "lists all incomes", %{conn: conn} do
       conn = get(conn, ~p"/incomes")
-      assert html_response(conn, 200) =~ "Listing incomes"
+      response = html_response(conn, 200)
+      assert response =~ "Listing incomes"
+      assert_navigation_menu(response)
     end
   end
 
@@ -85,9 +87,9 @@ defmodule BudgetAppWeb.IncomeControllerTest do
       conn = delete(conn, ~p"/incomes/#{income}")
       assert redirected_to(conn) == ~p"/incomes"
 
-      assert_error_sent 404, fn ->
+      assert_error_sent(404, fn ->
         get(conn, ~p"/incomes/#{income}")
-      end
+      end)
     end
   end
 

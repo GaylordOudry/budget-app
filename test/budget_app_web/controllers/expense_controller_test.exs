@@ -20,7 +20,9 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
   describe "index" do
     test "lists all expenses", %{conn: conn} do
       conn = get(conn, ~p"/expenses")
-      assert html_response(conn, 200) =~ "Listing expenses"
+      response = html_response(conn, 200)
+      assert response =~ "Listing expenses"
+      assert_navigation_menu(response)
     end
   end
 
@@ -69,7 +71,9 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       category = expense_category_fixture()
 
       conn =
-        put(conn, ~p"/expenses/#{expense}", expense: Map.put(@update_attrs, :category_id, category.id))
+        put(conn, ~p"/expenses/#{expense}",
+          expense: Map.put(@update_attrs, :category_id, category.id)
+        )
 
       assert redirected_to(conn) == ~p"/expenses/#{expense}"
 
@@ -93,9 +97,9 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       conn = delete(conn, ~p"/expenses/#{expense}")
       assert redirected_to(conn) == ~p"/expenses"
 
-      assert_error_sent 404, fn ->
+      assert_error_sent(404, fn ->
         get(conn, ~p"/expenses/#{expense}")
-      end
+      end)
     end
   end
 

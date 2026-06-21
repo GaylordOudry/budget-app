@@ -10,7 +10,9 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
   describe "index" do
     test "lists all categories", %{conn: conn} do
       conn = get(conn, ~p"/categories")
-      assert html_response(conn, 200) =~ "Listing categories"
+      response = html_response(conn, 200)
+      assert response =~ "Listing categories"
+      assert_navigation_menu(response)
     end
   end
 
@@ -71,12 +73,15 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
       conn = delete(conn, ~p"/categories/#{category}")
       assert redirected_to(conn) == ~p"/categories"
 
-      assert_error_sent 404, fn ->
+      assert_error_sent(404, fn ->
         get(conn, ~p"/categories/#{category}")
-      end
+      end)
     end
 
-    test "shows an error when expenses still reference the category", %{conn: conn, category: category} do
+    test "shows an error when expenses still reference the category", %{
+      conn: conn,
+      category: category
+    } do
       _expense = expense_fixture(%{category: category})
 
       conn = delete(conn, ~p"/categories/#{category}")
@@ -84,7 +89,9 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
       assert redirected_to(conn) == ~p"/categories/#{category}"
 
       conn = get(recycle(conn), ~p"/categories/#{category}")
-      assert html_response(conn, 200) =~ "Category could not be deleted because expenses still reference it."
+
+      assert html_response(conn, 200) =~
+               "Category could not be deleted because expenses still reference it."
     end
   end
 

@@ -4,23 +4,27 @@ defmodule BudgetApp.Repo.Migrations.AddUsersAndCategoryOwners do
   def up do
     create table(:users) do
       add :name, :string, null: false
+      add :email, :string, null: false
+      add :hashed_password, :string
+      add :confirmed_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
     end
 
     create unique_index(:users, [:name])
+    create unique_index(:users, [:email])
 
-    execute("""
-    INSERT INTO users (name, inserted_at, updated_at)
-    SELECT DISTINCT created_by, NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC'
-    FROM (
-      SELECT created_by FROM expenses
-      UNION
-      SELECT created_by FROM incomes
-    ) owners
-    WHERE created_by IS NOT NULL AND created_by <> ''
-    ON CONFLICT (name) DO NOTHING
-    """)
+    create table(:users_tokens) do
+      add :user_id, references(:users, on_delete: :delete_all), null: false
+      add :token, :binary, null: false
+      add :context, :string, null: false
+      add :authenticated_at, :utc_datetime
+
+      timestamps(type: :utc_datetime, updated_at: false)
+    end
+
+    create index(:users_tokens, [:user_id])
+    create unique_index(:users_tokens, [:context, :token])
 
     alter table(:expense_categories) do
       add :created_by, :string
@@ -62,18 +66,8 @@ defmodule BudgetApp.Repo.Migrations.AddUsersAndCategoryOwners do
     """)
 
     execute("""
-    INSERT INTO users (name, inserted_at, updated_at)
-    SELECT 'default', NOW() AT TIME ZONE 'UTC', NOW() AT TIME ZONE 'UTC'
-    WHERE EXISTS (
-      SELECT 1 FROM expense_categories WHERE created_by IS NULL
-    )
-      AND NOT EXISTS (SELECT 1 FROM users)
-    ON CONFLICT (name) DO NOTHING
-    """)
-
-    execute("""
     UPDATE expense_categories
-    SET created_by = (SELECT name FROM users ORDER BY id LIMIT 1)
+    SET created_by = 'default'
     WHERE created_by IS NULL
     """)
 
@@ -89,6 +83,11 @@ defmodule BudgetApp.Repo.Migrations.AddUsersAndCategoryOwners do
   end
 
   def down do
+    drop unique_index(:users_tokens, [:context, :token])
+    drop index(:users_tokens, [:user_id])
+    drop table(:users_tokens)
+
+    drop unique_index(:users, [:email])
     drop unique_index(:expense_categories, [:created_by, :name])
     drop index(:expense_categories, [:created_by])
     create unique_index(:expense_categories, [:name])

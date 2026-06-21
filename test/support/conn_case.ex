@@ -39,9 +39,18 @@ defmodule BudgetAppWeb.ConnCase do
   end
 
   def register_and_log_in_user(%{conn: conn}) do
-    user = user_fixture(%{name: "owner"})
-    conn = Phoenix.ConnTest.init_test_session(conn, %{current_user_id: user.id})
+    user = user_fixture(%{name: "owner", email: "owner@example.com"})
+    scope = BudgetApp.Users.Scope.for_user(user)
+    conn = log_in_user(conn, user)
 
-    %{conn: conn, current_user: user}
+    %{conn: conn, current_user: user, scope: scope}
+  end
+
+  def log_in_user(conn, user) do
+    token = BudgetApp.Users.generate_user_session_token(user)
+
+    conn
+    |> Phoenix.ConnTest.init_test_session(%{})
+    |> Plug.Conn.put_session(:user_token, token)
   end
 end

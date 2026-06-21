@@ -11,6 +11,19 @@ config :budget_app,
   ecto_repos: [BudgetApp.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+config :budget_app, :scopes,
+  user: [
+    default: true,
+    module: BudgetApp.Users.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id,
+    schema_table: :users,
+    test_data_fixture: BudgetApp.UsersFixtures,
+    test_setup_helper: :register_and_log_in_user
+  ]
+
 # Configure the endpoint
 config :budget_app, BudgetAppWeb.Endpoint,
   url: [host: "localhost"],

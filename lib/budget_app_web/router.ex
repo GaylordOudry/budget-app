@@ -1,6 +1,8 @@
 defmodule BudgetAppWeb.Router do
   use BudgetAppWeb, :router
 
+  import BudgetAppWeb.UserAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,11 +10,15 @@ defmodule BudgetAppWeb.Router do
     plug :put_root_layout, html: {BudgetAppWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug BudgetAppWeb.Plugs.FetchCurrentUser
+    plug :fetch_current_scope_for_user
   end
 
-  pipeline :require_current_user do
-    plug BudgetAppWeb.Plugs.RequireCurrentUser
+  pipeline :require_authenticated_user do
+    plug :require_authenticated_user
+  end
+
+  pipeline :redirect_if_user_is_authenticated do
+    plug :redirect_if_user_is_authenticated
   end
 
   pipeline :api do
@@ -24,13 +30,18 @@ defmodule BudgetAppWeb.Router do
 
     get "/", UserController, :home
     get "/users", UserController, :index
-    post "/users", UserController, :create
-    post "/users/:id/select", UserController, :select
-    delete "/users/:id", UserController, :delete
+    post "/users/log-in", UserController, :log_in
+    delete "/users/log-out", UserController, :log_out
   end
 
   scope "/", BudgetAppWeb do
-    pipe_through [:browser, :require_current_user]
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
+
+    post "/users", UserController, :create
+  end
+
+  scope "/", BudgetAppWeb do
+    pipe_through [:browser, :require_authenticated_user]
 
     resources "/categories", ExpenseCategoryController
     resources "/expenses", ExpenseController

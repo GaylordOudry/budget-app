@@ -37,7 +37,9 @@ defmodule BudgetAppWeb.Layouts do
 
   def app(assigns) do
     assigns =
-      assign(assigns, :navigation_items, navigation_items(assigns.current_user))
+      assigns
+      |> assign(:current_user, assigns.current_user || assigns.current_scope && assigns.current_scope.user)
+      |> assign(:navigation_items, navigation_items(assigns.current_user))
 
     ~H"""
     <div class="min-h-screen bg-base-200/30">
@@ -63,6 +65,13 @@ defmodule BudgetAppWeb.Layouts do
                 {item.label}
               </.link>
             </nav>
+            <form :if={@current_user} action={~p"/users/log-out"} method="post">
+              <input type="hidden" name="_method" value="delete" />
+              <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+              <button class="rounded-full border border-base-300 bg-base-100 px-4 py-2 text-sm font-medium text-base-content transition hover:border-primary/30 hover:bg-primary hover:text-primary-content">
+                Déconnexion
+              </button>
+            </form>
             <.theme_toggle />
           </div>
         </div>
@@ -164,14 +173,14 @@ defmodule BudgetAppWeb.Layouts do
     """
   end
 
-  defp navigation_items(nil), do: [%{label: "Utilisateurs", path: ~p"/users"}]
+  defp navigation_items(nil), do: [%{label: "Connexion", path: ~p"/users"}]
 
   defp navigation_items(_current_user) do
     [
       %{label: "Dépenses", path: ~p"/expenses"},
       %{label: "Revenus", path: ~p"/incomes"},
       %{label: "Catégories", path: ~p"/categories"},
-      %{label: "Utilisateurs", path: ~p"/users"}
+      %{label: "Compte", path: ~p"/users"}
     ]
   end
 end

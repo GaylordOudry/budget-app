@@ -3,6 +3,7 @@ defmodule BudgetAppWeb.UserController do
 
   alias BudgetApp.Users
   alias BudgetApp.Users.User
+  alias BudgetAppWeb.UserAuth
 
   def home(%Plug.Conn{assigns: %{current_user: %User{}}} = conn, _params) do
     redirect(conn, to: ~p"/expenses")
@@ -13,70 +14,50 @@ defmodule BudgetAppWeb.UserController do
   end
 
   def index(conn, _params) do
-    render(conn, :index,
-      users: Users.list_users(),
-      form: Phoenix.Component.to_form(Users.change_user(%User{}))
-    )
+    render(conn, :index, registration_form: registration_form(), login_form: login_form())
   end
 
   def create(conn, %{"user" => user_params}) do
-    case Users.create_user(user_params) do
+    case Users.register_user(user_params) do
       {:ok, user} ->
         conn
-        |> log_in_user(user)
-        |> put_flash(:info, "Utilisateur créé avec succès.")
-        |> redirect(to: ~p"/expenses")
+        |> put_flash(:info, "Compte créé avec succès.")
+        |> UserAuth.log_in_user(user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, :index,
-          users: Users.list_users(),
-          form: Phoenix.Component.to_form(changeset)
+          registration_form: Phoenix.Component.to_form(changeset),
+          login_form: login_form(%{"email" => Map.get(user_params, "email", "")})
         )
     end
   end
 
-  def select(conn, %{"id" => id}) do
-    user = Users.get_user!(id)
-
-    conn
-    |> log_in_user(user)
-    |> put_flash(:info, "#{user.name} est maintenant l'utilisateur actif.")
-    |> redirect(to: ~p"/expenses")
-  end
-
-  def delete(conn, %{"id" => id}) do
-    user = Users.get_user!(id)
-
-    case Users.delete_user(user) do
-      {:ok, _user} ->
-        conn
-        |> maybe_clear_current_user(user)
-        |> put_flash(:info, "Utilisateur supprimé avec succès.")
-        |> redirect(to: ~p"/users")
-
-      {:error, :user_has_records} ->
-        conn
-        |> put_flash(:error, "Cet utilisateur possède encore des dépenses, revenus ou catégories.")
-        |> redirect(to: ~p"/users")
+  def log_in(conn, %{"user" => %{"email" => email, "password" => password} = user_params}) do
+    if user = Users.get_user_by_email_and_password(email, password) do
+      conn
+      |> put_flash(:info, "Bon retour.")
+      |> UserAuth.log_in_user(user, user_params)
+    else
+      conn
+      |> put_flash(:error, "Email ou mot de passe invalide.")
+      |> render(:index,
+        registration_form: registration_form(),
+        login_form: login_form(%{"email" => email})
+      )
     end
   end
 
-  defp log_in_user(conn, user) do
+  def log_out(conn, _params) do
     conn
-    |> configure_session(renew: true)
-    |> put_session(:current_user_id, user.id)
-    |> assign(:current_user, user)
+    |> put_flash(:info, "Déconnecté avec succès.")
+    |> UserAuth.log_out_user()
   end
 
-  defp maybe_clear_current_user(conn, user) do
-    case conn.assigns[:current_user] do
-      %User{id: current_user_id} when current_user_id == user.id ->
-        conn
-        |> configure_session(drop: true)
-        |> assign(:current_user, nil)
+  defp registration_form do
+    Phoenix.Component.to_form(Users.change_user_registration(%User{}))
+  end
 
-      _other ->
-        conn
-    end
+  defp login_form(params \\ %{}) do
+    Phoenix.Component.to_form(params, as: :user)
   end
 end

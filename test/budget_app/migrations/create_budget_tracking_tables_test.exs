@@ -8,11 +8,38 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
 
     assert columns["name"]["data_type"] == "character varying"
     assert columns["name"]["is_nullable"] == "NO"
+    assert columns["created_by"]["data_type"] == "character varying"
+    assert columns["created_by"]["is_nullable"] == "NO"
 
     assert Enum.any?(index_definitions("expense_categories"), fn index_definition ->
              String.contains?(index_definition, "UNIQUE INDEX") and
-               String.contains?(index_definition, "(name)")
+               String.contains?(index_definition, "(created_by, name)")
            end)
+  end
+
+  test "users support password-backed authentication" do
+    columns = column_details("users")
+
+    assert columns["name"]["data_type"] == "character varying"
+    assert columns["name"]["is_nullable"] == "NO"
+    assert columns["email"]["data_type"] == "character varying"
+    assert columns["email"]["is_nullable"] == "NO"
+    assert columns["hashed_password"]["data_type"] == "character varying"
+
+    assert has_index?("users", "(name)")
+    assert has_index?("users", "(email)")
+
+    token_columns = column_details("users_tokens")
+
+    assert token_columns["token"]["data_type"] == "bytea"
+    assert token_columns["context"]["data_type"] == "character varying"
+    assert token_columns["authenticated_at"]["data_type"] == "timestamp with time zone"
+
+    assert %{
+            "column_name" => "user_id",
+            "foreign_table_name" => "users",
+            "foreign_column_name" => "id"
+           } in foreign_keys("users_tokens")
   end
 
   test "expenses include the required budget tracking fields" do
@@ -66,11 +93,11 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
       SQL.query!(
         Repo,
         """
-        INSERT INTO expense_categories (name, inserted_at, updated_at)
-        VALUES ($1, NOW(), NOW())
+        INSERT INTO expense_categories (name, created_by, inserted_at, updated_at)
+        VALUES ($1, $2, NOW(), NOW())
         RETURNING id
         """,
-        ["Housing"]
+        ["Housing", "owner"]
       ).rows
       |> List.first()
       |> List.first()

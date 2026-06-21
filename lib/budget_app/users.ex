@@ -5,43 +5,56 @@ defmodule BudgetApp.Users do
 
   import Ecto.Query, warn: false
 
-  alias BudgetApp.Expenses.Expense
-  alias BudgetApp.Expenses.ExpenseCategory
-  alias BudgetApp.Incomes.Income
   alias BudgetApp.Repo
   alias BudgetApp.Users.User
-
-  def list_users do
-    User
-    |> order_by([user], [asc: user.name, asc: user.id])
-    |> Repo.all()
-  end
-
-  def get_user(id), do: Repo.get(User, id)
+  alias BudgetApp.Users.UserToken
 
   def get_user!(id), do: Repo.get!(User, id)
 
-  def create_user(attrs \\ %{}) do
+  def get_user_by_email(email) when is_binary(email) do
+    Repo.get_by(User, email: normalize_email(email))
+  end
+
+  def get_user_by_email_and_password(email, password)
+      when is_binary(email) and is_binary(password) do
+    user = Repo.get_by(User, email: normalize_email(email))
+
+    if User.valid_password?(user, password), do: user
+  end
+
+  def register_user(attrs \\ %{}) do
     %User{}
-    |> User.changeset(attrs)
+    |> User.registration_changeset(attrs)
     |> Repo.insert()
   end
 
-  def change_user(%User{} = user, attrs \\ %{}) do
-    User.changeset(user, attrs)
+  def create_user(attrs \\ %{}), do: register_user(attrs)
+
+  def change_user_registration(%User{} = user, attrs \\ %{}) do
+    User.registration_changeset(user, attrs, hash_password: false)
   end
 
-  def delete_user(%User{} = user) do
-    if user_has_records?(user) do
-      {:error, :user_has_records}
-    else
-      Repo.delete(user)
-    end
+  def change_user(%User{} = user, attrs \\ %{}), do: change_user_registration(user, attrs)
+
+  def generate_user_session_token(user) do
+    {token, user_token} = UserToken.build_session_token(user)
+    Repo.insert!(user_token)
+    token
   end
 
-  def user_has_records?(%User{name: name}) do
-    Repo.exists?(from expense in Expense, where: expense.created_by == ^name) or
-      Repo.exists?(from income in Income, where: income.created_by == ^name) or
-      Repo.exists?(from category in ExpenseCategory, where: category.created_by == ^name)
+  def get_user_by_session_token(token) do
+    {:ok, query} = UserToken.verify_session_token_query(token)
+    Repo.one(query)
+  end
+
+  def delete_user_session_token(token) do
+    Repo.delete_all(from user_token in UserToken, where: user_token.token == ^token and user_token.context == "session")
+    :ok
+  end
+
+  defp normalize_email(email) do
+    email
+    |> String.trim()
+    |> String.downcase()
   end
 end

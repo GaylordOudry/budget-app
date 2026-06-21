@@ -1,82 +1,86 @@
-<Layouts.app flash={@flash} current_user={@current_user}>
-  <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
-    <div class="rounded-3xl border border-base-300 bg-base-100 p-6 shadow-sm">
-      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+<Layouts.app flash={@flash} current_user={@current_user} current_scope={@current_scope}>
+  <%= if @current_user do %>
+    <section class="mx-auto max-w-2xl rounded-3xl border border-base-300 bg-base-100 p-8 shadow-sm">
+      <div class="space-y-3">
+        <span class="inline-flex rounded-full bg-success/15 px-3 py-1 text-sm font-medium text-success">
+          Connecté
+        </span>
         <div>
-          <h1 class="text-2xl font-semibold text-base-content">Utilisateurs</h1>
-          <p class="text-sm text-base-content/70">
-            Créez un utilisateur puis sélectionnez-le pour isoler ses dépenses, revenus et catégories.
+          <h1 class="text-2xl font-semibold text-base-content">Compte actif</h1>
+          <p class="mt-1 text-sm text-base-content/70">
+            Vos dépenses, revenus et catégories restent isolés à ce profil.
           </p>
         </div>
-        <span class="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-          {if @current_user, do: "Actif : #{@current_user.name}", else: "Aucun utilisateur actif"}
-        </span>
+        <dl class="grid gap-4 rounded-2xl border border-base-300 bg-base-200/40 p-5 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm text-base-content/60">Nom</dt>
+            <dd class="mt-1 font-medium text-base-content">{@current_user.name}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-base-content/60">Email</dt>
+            <dd class="mt-1 font-medium text-base-content">{@current_user.email}</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  <% else %>
+    <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+      <div class="rounded-3xl border border-base-300 bg-base-100 p-6 shadow-sm">
+        <div class="space-y-2">
+          <h1 class="text-2xl font-semibold text-base-content">Connexion sécurisée</h1>
+          <p class="text-sm text-base-content/70">
+            Créez un compte protégé par mot de passe pour isoler vos données budgétaires.
+          </p>
+          <p class="rounded-2xl bg-base-200/70 px-4 py-3 text-sm text-base-content/70">
+            Si vous avez déjà des écritures, inscrivez-vous avec le même nom que celui utilisé auparavant pour retrouver vos données existantes.
+          </p>
+        </div>
+
+        <.form for={@login_form} id="login-form" action={~p"/users/log-in"} class="mt-6 space-y-4">
+          <.input field={@login_form[:email]} type="email" label="Email" required />
+          <.input
+            field={@login_form[:password]}
+            type="password"
+            label="Mot de passe"
+            required
+          />
+          <label class="flex items-center gap-2 text-sm text-base-content/70">
+            <input
+              type="checkbox"
+              name={@login_form[:remember_me].name}
+              value="true"
+              class="checkbox checkbox-sm"
+            />
+            Rester connecté sur cet appareil
+          </label>
+
+          <.button variant="primary" class="w-full justify-center">
+            Se connecter
+          </.button>
+        </.form>
       </div>
 
-      <div class="mt-6 overflow-hidden rounded-2xl border border-base-300">
-        <table class="min-w-full divide-y divide-base-300">
-          <thead class="bg-base-200/70 text-left text-sm text-base-content/70">
-            <tr>
-              <th class="px-4 py-3 font-medium">Nom</th>
-              <th class="px-4 py-3 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-base-300 bg-base-100">
-            <tr :if={@users == []}>
-              <td colspan="2" class="px-4 py-6 text-sm text-base-content/70">
-                Créez votre premier utilisateur pour commencer.
-              </td>
-            </tr>
-            <tr :for={user <- @users} id={"user-#{user.id}"} class="text-sm">
-              <td class="px-4 py-4 align-middle">
-                <div class="flex items-center gap-3">
-                  <span class="font-medium text-base-content">{user.name}</span>
-                  <span
-                    :if={@current_user && @current_user.id == user.id}
-                    class="rounded-full bg-success/15 px-2.5 py-1 text-xs font-semibold text-success"
-                  >
-                    Actif
-                  </span>
-                </div>
-              </td>
-              <td class="px-4 py-4">
-                <div class="flex justify-end gap-2">
-                  <.form
-                    for={Phoenix.Component.to_form(%{}, as: :select_user)}
-                    action={~p"/users/#{user}/select"}
-                  >
-                    <.button variant="primary">Sélectionner</.button>
-                  </.form>
-                  <.form
-                    for={Phoenix.Component.to_form(%{}, as: :delete_user)}
-                    action={~p"/users/#{user}"}
-                    method="delete"
-                  >
-                    <.button data-confirm="Supprimer cet utilisateur ?" variant="danger">
-                      Supprimer
-                    </.button>
-                  </.form>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="rounded-3xl border border-base-300 bg-base-100 p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-base-content">Créer un compte</h2>
+        <p class="mt-1 text-sm text-base-content/70">
+          Le compte devient immédiatement l'utilisateur actif après sa création.
+        </p>
+
+        <.form for={@registration_form} id="user-form" action={~p"/users"} class="mt-6 space-y-4">
+          <.input field={@registration_form[:name]} type="text" label="Nom" required />
+          <.input field={@registration_form[:email]} type="email" label="Email" required />
+          <.input
+            field={@registration_form[:password]}
+            type="password"
+            label="Mot de passe"
+            required
+          />
+
+          <.button variant="primary" class="w-full justify-center">
+            Créer le compte
+          </.button>
+        </.form>
       </div>
-    </div>
-
-    <div class="rounded-3xl border border-base-300 bg-base-100 p-6 shadow-sm">
-      <h2 class="text-lg font-semibold text-base-content">Nouvel utilisateur</h2>
-      <p class="mt-1 text-sm text-base-content/70">
-        Le nouvel utilisateur devient automatiquement l'utilisateur actif.
-      </p>
-
-      <.form for={@form} id="user-form" action={~p"/users"} class="mt-6 space-y-4">
-        <.input field={@form[:name]} type="text" label="Nom" />
-
-        <.button variant="primary" class="w-full justify-center">
-          Créer l'utilisateur
-        </.button>
-      </.form>
-    </div>
-  </section>
+    </section>
+  <% end %>
 </Layouts.app>

@@ -48,7 +48,10 @@ defmodule BudgetApp.Users do
   end
 
   def delete_user_session_token(token) do
-    Repo.delete_all(from user_token in UserToken, where: user_token.token == ^token and user_token.context == "session")
+    Repo.delete_all(
+      from(user_token in UserToken, where: user_token.token == ^token and user_token.context == "session")
+    )
+
     :ok
   end
 

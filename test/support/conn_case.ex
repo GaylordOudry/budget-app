@@ -29,11 +29,19 @@ defmodule BudgetAppWeb.ConnCase do
       import Phoenix.ConnTest
       import BudgetAppWeb.ConnCase
       import BudgetAppWeb.HTMLAssertions
+      import BudgetApp.UsersFixtures
     end
   end
 
   setup tags do
     BudgetApp.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
+  end
+
+  def register_and_log_in_user(%{conn: conn}) do
+    user = user_fixture(%{name: "owner"})
+    conn = Phoenix.ConnTest.init_test_session(conn, %{current_user_id: user.id})
+
+    %{conn: conn, current_user: user}
   end
 end

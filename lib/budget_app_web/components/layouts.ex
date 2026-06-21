@@ -26,6 +26,7 @@ defmodule BudgetAppWeb.Layouts do
 
   """
   attr(:flash, :map, required: true, doc: "the map of flash messages")
+  attr(:current_user, :map, default: nil, doc: "the active user")
 
   attr(:current_scope, :map,
     default: nil,
@@ -36,17 +37,19 @@ defmodule BudgetAppWeb.Layouts do
 
   def app(assigns) do
     assigns =
-      assign(assigns, :navigation_items, [
-        %{label: "Dépenses", path: ~p"/expenses"},
-        %{label: "Revenus", path: ~p"/incomes"},
-        %{label: "Catégories", path: ~p"/categories"}
-      ])
+      assign(assigns, :navigation_items, navigation_items(assigns.current_user))
 
     ~H"""
     <div class="min-h-screen bg-base-200/30">
       <header class="border-b border-base-300 bg-base-100/90">
         <div class="mx-auto flex flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-end lg:px-8">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <div class="flex items-center justify-end gap-2 text-sm">
+              <span class="text-base-content/60">Utilisateur</span>
+              <span class="rounded-full bg-primary/10 px-3 py-1 font-medium text-primary">
+                {if @current_user, do: @current_user.name, else: "Aucun"}
+              </span>
+            </div>
             <nav
               id="app-navigation"
               aria-label="Primary"
@@ -159,5 +162,16 @@ defmodule BudgetAppWeb.Layouts do
       </button>
     </div>
     """
+  end
+
+  defp navigation_items(nil), do: [%{label: "Utilisateurs", path: ~p"/users"}]
+
+  defp navigation_items(_current_user) do
+    [
+      %{label: "Dépenses", path: ~p"/expenses"},
+      %{label: "Revenus", path: ~p"/incomes"},
+      %{label: "Catégories", path: ~p"/categories"},
+      %{label: "Utilisateurs", path: ~p"/users"}
+    ]
   end
 end

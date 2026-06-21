@@ -8,6 +8,11 @@ defmodule BudgetAppWeb.Router do
     plug :put_root_layout, html: {BudgetAppWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug BudgetAppWeb.Plugs.FetchCurrentUser
+  end
+
+  pipeline :require_current_user do
+    plug BudgetAppWeb.Plugs.RequireCurrentUser
   end
 
   pipeline :api do
@@ -16,6 +21,16 @@ defmodule BudgetAppWeb.Router do
 
   scope "/", BudgetAppWeb do
     pipe_through :browser
+
+    get "/", UserController, :home
+    get "/users", UserController, :index
+    post "/users", UserController, :create
+    post "/users/:id/select", UserController, :select
+    delete "/users/:id", UserController, :delete
+  end
+
+  scope "/", BudgetAppWeb do
+    pipe_through [:browser, :require_current_user]
 
     resources "/categories", ExpenseCategoryController
     resources "/expenses", ExpenseController

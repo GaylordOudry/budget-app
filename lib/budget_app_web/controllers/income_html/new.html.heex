@@ -1,4 +1,4 @@
-<Layouts.app flash={@flash}>
+<Layouts.app flash={@flash} current_user={@current_user}>
   <.header>
     Nouveau revenu
   </.header>
@@ -7,5 +7,6 @@
     form={@form}
     action={~p"/incomes"}
     return_to={~p"/incomes"}
+    current_user={@current_user}
   />
 </Layouts.app>

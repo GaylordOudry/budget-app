@@ -3,6 +3,8 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
 
   import BudgetApp.ExpensesFixtures
 
+  setup :register_and_log_in_user
+
   @create_attrs %{name: "Housing"}
   @update_attrs %{name: "Transport"}
   @invalid_attrs %{name: nil}
@@ -76,6 +78,16 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
       assert_error_sent(404, fn ->
         get(conn, ~p"/categories/#{category}")
       end)
+    end
+
+    describe "ownership" do
+      test "hides another user's category", %{conn: conn} do
+        category = expense_category_fixture(%{created_by: "reviewer"})
+
+        assert_error_sent(404, fn ->
+          get(conn, ~p"/categories/#{category}")
+        end)
+      end
     end
 
     test "shows an error when expenses still reference the category", %{

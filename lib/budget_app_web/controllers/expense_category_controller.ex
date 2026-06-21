@@ -5,17 +5,19 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
   alias BudgetApp.Expenses.ExpenseCategory
 
   def index(conn, _params) do
-    categories = Expenses.list_expense_categories()
+    categories = Expenses.list_expense_categories(current_user_name(conn))
     render(conn, :index, categories: categories)
   end
 
   def new(conn, _params) do
-    changeset = Expenses.change_expense_category(%ExpenseCategory{})
+    changeset =
+      Expenses.change_expense_category(%ExpenseCategory{created_by: current_user_name(conn)})
+
     render(conn, :new, form: Phoenix.Component.to_form(changeset))
   end
 
   def create(conn, %{"expense_category" => expense_category_params}) do
-    case Expenses.create_expense_category(expense_category_params) do
+    case Expenses.create_expense_category(expense_category_params, current_user_name(conn)) do
       {:ok, expense_category} ->
         conn
         |> put_flash(:info, "Catégorie créée avec succès.")
@@ -27,12 +29,12 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
   end
 
   def show(conn, %{"id" => id}) do
-    category = Expenses.get_expense_category!(id)
+    category = Expenses.get_expense_category!(id, current_user_name(conn))
     render(conn, :show, category: category)
   end
 
   def edit(conn, %{"id" => id}) do
-    category = Expenses.get_expense_category!(id)
+    category = Expenses.get_expense_category!(id, current_user_name(conn))
     changeset = Expenses.change_expense_category(category)
 
     render(conn, :edit,
@@ -42,7 +44,7 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
   end
 
   def update(conn, %{"id" => id, "expense_category" => expense_category_params}) do
-    category = Expenses.get_expense_category!(id)
+    category = Expenses.get_expense_category!(id, current_user_name(conn))
 
     case Expenses.update_expense_category(category, expense_category_params) do
       {:ok, category} ->
@@ -59,7 +61,7 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
   end
 
   def delete(conn, %{"id" => id}) do
-    category = Expenses.get_expense_category!(id)
+    category = Expenses.get_expense_category!(id, current_user_name(conn))
 
     case Expenses.delete_expense_category(category) do
       {:ok, _category} ->
@@ -73,4 +75,6 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
         |> redirect(to: ~p"/categories/#{category}")
     end
   end
+
+  defp current_user_name(conn), do: conn.assigns.current_user.name
 end

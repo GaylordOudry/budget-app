@@ -4,6 +4,8 @@ defmodule BudgetApp.IncomesFixtures do
   alias BudgetApp.Incomes
 
   def income_fixture(attrs \\ %{}) do
+    created_by = Map.get(attrs, :created_by) || Map.get(attrs, "created_by") || "owner"
+
     attrs =
       Enum.into(attrs, %{
         date: ~D[2026-06-21],
@@ -12,7 +14,12 @@ defmodule BudgetApp.IncomesFixtures do
         created_by: "owner"
       })
 
-    {:ok, income} = Incomes.create_income(attrs)
+    attrs =
+      attrs
+      |> Map.delete(:created_by)
+      |> Map.delete("created_by")
+
+    {:ok, income} = Incomes.create_income(attrs, created_by)
     income
   end
 end

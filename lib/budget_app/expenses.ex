@@ -9,29 +9,33 @@ defmodule BudgetApp.Expenses do
   alias BudgetApp.Expenses.Expense
   alias BudgetApp.Expenses.ExpenseCategory
 
-  def list_expenses do
+  def list_expenses(created_by) when is_binary(created_by) do
     Expense
+    |> where([expense], expense.created_by == ^created_by)
     |> order_by([expense], [desc: expense.date, desc: expense.id])
     |> preload(:category)
     |> Repo.all()
   end
 
-  def get_expense!(id) do
+  def get_expense!(id, created_by) when is_binary(created_by) do
     Expense
-    |> Repo.get!(id)
+    |> where([expense], expense.id == ^id and expense.created_by == ^created_by)
+    |> Repo.one!()
     |> Repo.preload(:category)
   end
 
-  def create_expense(attrs \\ %{}) do
+  def create_expense(attrs, created_by) when is_binary(created_by) do
     %Expense{}
-    |> Expense.changeset(attrs)
+    |> Expense.changeset(with_created_by(attrs, created_by))
+    |> validate_expense_category(created_by)
     |> Repo.insert()
     |> preload_expense_category()
   end
 
-  def update_expense(%Expense{} = expense, attrs) do
+  def update_expense(%Expense{} = expense, attrs, created_by) when is_binary(created_by) do
     expense
-    |> Expense.changeset(attrs)
+    |> Expense.changeset(with_created_by(attrs, created_by))
+    |> validate_expense_category(created_by)
     |> Repo.update()
     |> preload_expense_category()
   end
@@ -44,25 +48,29 @@ defmodule BudgetApp.Expenses do
     Expense.changeset(expense, attrs)
   end
 
-  def list_expense_categories do
+  def list_expense_categories(created_by) when is_binary(created_by) do
     ExpenseCategory
+    |> where([category], category.created_by == ^created_by)
     |> order_by(asc: :name)
     |> Repo.all()
   end
 
-  def create_expense_category(attrs \\ %{}) do
+  def create_expense_category(attrs, created_by) when is_binary(created_by) do
     %ExpenseCategory{}
-    |> ExpenseCategory.changeset(attrs)
+    |> ExpenseCategory.changeset(with_created_by(attrs, created_by))
     |> Repo.insert()
   end
 
-  def get_expense_category!(id) do
-    Repo.get!(ExpenseCategory, id)
+  def get_expense_category!(id, created_by) when is_binary(created_by) do
+    Repo.one!(
+      from category in ExpenseCategory,
+        where: category.id == ^id and category.created_by == ^created_by
+    )
   end
 
   def update_expense_category(%ExpenseCategory{} = expense_category, attrs) do
     expense_category
-    |> ExpenseCategory.changeset(attrs)
+    |> ExpenseCategory.changeset(with_created_by(attrs, expense_category.created_by))
     |> Repo.update()
   end
 
@@ -82,4 +90,28 @@ defmodule BudgetApp.Expenses do
   end
 
   defp preload_expense_category({:error, _} = error), do: error
+
+  defp with_created_by(attrs, created_by) do
+    attrs
+    |> Map.delete(:created_by)
+    |> Map.delete("created_by")
+    |> Map.put("created_by", created_by)
+  end
+
+  defp validate_expense_category(changeset, created_by) do
+    case Ecto.Changeset.get_field(changeset, :category_id) do
+      nil ->
+        changeset
+
+      category_id ->
+        if Repo.exists?(
+             from category in ExpenseCategory,
+               where: category.id == ^category_id and category.created_by == ^created_by
+           ) do
+          changeset
+        else
+          Ecto.Changeset.add_error(changeset, :category_id, "is invalid")
+        end
+    end
+  end
 end

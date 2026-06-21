@@ -3,19 +3,11 @@ defmodule BudgetAppWeb.IncomeControllerTest do
 
   import BudgetApp.IncomesFixtures
 
-  @create_attrs %{
-    amount: "125.50",
-    created_by: "owner",
-    currency: "EUR",
-    date: "2026-06-21"
-  }
-  @update_attrs %{
-    amount: "300.00",
-    created_by: "reviewer",
-    currency: "usd",
-    date: "2026-06-22"
-  }
-  @invalid_attrs %{amount: nil, created_by: nil, currency: nil, date: nil}
+  setup :register_and_log_in_user
+
+  @create_attrs %{amount: "125.50", currency: "EUR", date: "2026-06-21"}
+  @update_attrs %{amount: "300.00", currency: "usd", date: "2026-06-22"}
+  @invalid_attrs %{amount: nil, currency: nil, date: nil}
 
   describe "index" do
     test "lists all incomes", %{conn: conn} do
@@ -71,7 +63,7 @@ defmodule BudgetAppWeb.IncomeControllerTest do
       response = html_response(conn, 200)
       assert response =~ "300.00"
       assert response =~ "USD"
-      assert response =~ "reviewer"
+      assert response =~ "owner"
     end
 
     test "renders errors when data is invalid", %{conn: conn, income: income} do
@@ -90,6 +82,16 @@ defmodule BudgetAppWeb.IncomeControllerTest do
       assert_error_sent(404, fn ->
         get(conn, ~p"/incomes/#{income}")
       end)
+    end
+
+    describe "ownership" do
+      test "hides another user's income", %{conn: conn} do
+        income = income_fixture(%{created_by: "reviewer"})
+
+        assert_error_sent(404, fn ->
+          get(conn, ~p"/incomes/#{income}")
+        end)
+      end
     end
   end
 

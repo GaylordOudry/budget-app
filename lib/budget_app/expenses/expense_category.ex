@@ -6,6 +6,7 @@ defmodule BudgetApp.Expenses.ExpenseCategory do
 
   schema "expense_categories" do
     field :name, :string
+    field :created_by, :string
     has_many :expenses, Expense, foreign_key: :category_id
 
     timestamps(type: :utc_datetime)
@@ -13,8 +14,9 @@ defmodule BudgetApp.Expenses.ExpenseCategory do
 
   def changeset(expense_category, attrs) do
     expense_category
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
-    |> unique_constraint(:name)
+    |> cast(attrs, [:name, :created_by])
+    |> validate_required([:name, :created_by])
+    |> validate_length(:created_by, min: 1)
+    |> unique_constraint(:name, name: :expense_categories_created_by_name_index)
   end
 end

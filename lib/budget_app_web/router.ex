@@ -19,6 +19,7 @@ defmodule BudgetAppWeb.Router do
 
     resources "/categories", ExpenseCategoryController
     resources "/expenses", ExpenseController
+    resources "/incomes", IncomeController
   end
 
   # Other scopes may use custom stacks.

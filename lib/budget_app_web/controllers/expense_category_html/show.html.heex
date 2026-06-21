@@ -1,0 +1,18 @@
+<Layouts.app flash={@flash}>
+  <.header>
+    {@category.name}
+    <:subtitle>This is an expense category record from your database.</:subtitle>
+    <:actions>
+      <.button navigate={~p"/categories"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.button variant="primary" navigate={~p"/categories/#{@category}/edit"}>
+        <.icon name="hero-pencil-square" /> Edit category
+      </.button>
+    </:actions>
+  </.header>
+
+  <.list>
+    <:item title="Name">{@category.name}</:item>
+  </.list>
+</Layouts.app>

@@ -87,21 +87,14 @@ defmodule BudgetAppWeb.IncomeControllerTest do
       conn = delete(conn, ~p"/incomes/#{income}")
       assert redirected_to(conn) == ~p"/incomes"
 
-      assert_error_sent 404, fn ->
+      assert_error_sent(404, fn ->
         get(conn, ~p"/incomes/#{income}")
-      end
+      end)
     end
   end
 
   defp create_income(_) do
     income = income_fixture()
     %{income: income}
-  end
-
-  defp assert_navigation_menu(response) do
-    assert response =~ ~s(id="app-navigation")
-    assert response =~ ~s(href="/expenses")
-    assert response =~ ~s(href="/incomes")
-    assert response =~ ~s(href="/categories")
   end
 end

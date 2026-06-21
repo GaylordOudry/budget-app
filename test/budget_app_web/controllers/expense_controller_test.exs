@@ -71,7 +71,9 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       category = expense_category_fixture()
 
       conn =
-        put(conn, ~p"/expenses/#{expense}", expense: Map.put(@update_attrs, :category_id, category.id))
+        put(conn, ~p"/expenses/#{expense}",
+          expense: Map.put(@update_attrs, :category_id, category.id)
+        )
 
       assert redirected_to(conn) == ~p"/expenses/#{expense}"
 
@@ -95,21 +97,14 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       conn = delete(conn, ~p"/expenses/#{expense}")
       assert redirected_to(conn) == ~p"/expenses"
 
-      assert_error_sent 404, fn ->
+      assert_error_sent(404, fn ->
         get(conn, ~p"/expenses/#{expense}")
-      end
+      end)
     end
   end
 
   defp create_expense(_) do
     expense = expense_fixture()
     %{expense: expense}
-  end
-
-  defp assert_navigation_menu(response) do
-    assert response =~ ~s(id="app-navigation")
-    assert response =~ ~s(href="/expenses")
-    assert response =~ ~s(href="/incomes")
-    assert response =~ ~s(href="/categories")
   end
 end

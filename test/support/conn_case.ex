@@ -28,6 +28,7 @@ defmodule BudgetAppWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import BudgetAppWeb.ConnCase
+      import BudgetAppWeb.HTMLAssertions
     end
   end
 

@@ -73,12 +73,15 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
       conn = delete(conn, ~p"/categories/#{category}")
       assert redirected_to(conn) == ~p"/categories"
 
-      assert_error_sent 404, fn ->
+      assert_error_sent(404, fn ->
         get(conn, ~p"/categories/#{category}")
-      end
+      end)
     end
 
-    test "shows an error when expenses still reference the category", %{conn: conn, category: category} do
+    test "shows an error when expenses still reference the category", %{
+      conn: conn,
+      category: category
+    } do
       _expense = expense_fixture(%{category: category})
 
       conn = delete(conn, ~p"/categories/#{category}")
@@ -86,19 +89,14 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
       assert redirected_to(conn) == ~p"/categories/#{category}"
 
       conn = get(recycle(conn), ~p"/categories/#{category}")
-      assert html_response(conn, 200) =~ "Category could not be deleted because expenses still reference it."
+
+      assert html_response(conn, 200) =~
+               "Category could not be deleted because expenses still reference it."
     end
   end
 
   defp create_category(_) do
     category = expense_category_fixture()
     %{category: category}
-  end
-
-  defp assert_navigation_menu(response) do
-    assert response =~ ~s(id="app-navigation")
-    assert response =~ ~s(href="/expenses")
-    assert response =~ ~s(href="/incomes")
-    assert response =~ ~s(href="/categories")
   end
 end

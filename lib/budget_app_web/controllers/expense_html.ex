@@ -28,7 +28,7 @@ defmodule BudgetAppWeb.ExpenseHTML do
 
       <footer class="mt-6 flex flex-wrap gap-3">
         <.button variant="primary">Save expense</.button>
-        <.button :if={@return_to} href={@return_to}>Cancel</.button>
+        <.button :if={@return_to} navigate={@return_to}>Cancel</.button>
       </footer>
     </.form>
     """

@@ -17,14 +17,16 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
   describe "index" do
     setup [:register_and_log_in_user]
 
-    test "lists only the connected user's categories", %{conn: conn, scope: scope} do
+    test "lists the connected user's categories and shared categories", %{conn: conn, scope: scope} do
       _own_category = expense_category_fixture(%{scope: scope, name: "Housing"})
-      _other_category = expense_category_fixture(%{name: "Travel"})
+      _shared_category = expense_category_fixture(%{name: "Transport", shared: true})
+      _other_category = expense_category_fixture(%{name: "Travel", shared: false})
 
       conn = get(conn, ~p"/categories")
       response = html_response(conn, 200)
       assert response =~ "Liste des catégories"
       assert response =~ "Housing"
+      assert response =~ "Transport"
       refute response =~ "Travel"
       assert_navigation_menu(response)
     end
@@ -35,7 +37,9 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
 
     test "renders form", %{conn: conn} do
       conn = get(conn, ~p"/categories/new")
-      assert html_response(conn, 200) =~ "Nouvelle catégorie"
+      response = html_response(conn, 200)
+      assert response =~ "Nouvelle catégorie"
+      assert response =~ "Partager cette catégorie"
     end
   end
 
@@ -43,13 +47,15 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
     setup [:register_and_log_in_user]
 
     test "redirects to show when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/categories", expense_category: @create_attrs)
+      conn = post(conn, ~p"/categories", expense_category: Map.put(@create_attrs, :shared, "true"))
 
       assert %{id: id} = redirected_params(conn)
       assert redirected_to(conn) == ~p"/categories/#{id}"
 
       conn = get(conn, ~p"/categories/#{id}")
-      assert html_response(conn, 200) =~ "Housing"
+      response = html_response(conn, 200)
+      assert response =~ "Housing"
+      assert response =~ "Partagé"
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -72,6 +78,29 @@ defmodule BudgetAppWeb.ExpenseCategoryControllerTest do
       assert_error_sent 404, fn ->
         get(conn, ~p"/categories/#{category}")
       end
+    end
+
+    test "returns 404 when editing another user's shared category", %{conn: conn} do
+      category = expense_category_fixture(%{shared: true})
+
+      assert_error_sent 404, fn ->
+        get(conn, ~p"/categories/#{category}/edit")
+      end
+    end
+  end
+
+  describe "show shared category" do
+    setup [:register_and_log_in_user]
+
+    test "renders another user's shared category without edit actions", %{conn: conn} do
+      category = expense_category_fixture(%{shared: true})
+
+      conn = get(conn, ~p"/categories/#{category}")
+      response = html_response(conn, 200)
+
+      assert response =~ category.name
+      assert response =~ "Partagé"
+      refute response =~ ~p"/categories/#{category}/edit"
     end
   end
 

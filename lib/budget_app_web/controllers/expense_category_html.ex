@@ -11,6 +11,7 @@ defmodule BudgetAppWeb.ExpenseCategoryHTML do
     ~H"""
     <.form for={@form} id="expense-category-form" action={@action}>
       <.input field={@form[:name]} type="text" label="Nom" />
+      <.input field={@form[:shared]} type="checkbox" label="Partager cette catégorie" />
 
       <footer class="mt-6 flex flex-wrap gap-3">
         <.button variant="primary">Enregistrer la catégorie</.button>

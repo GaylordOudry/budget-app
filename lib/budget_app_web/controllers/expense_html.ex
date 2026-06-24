@@ -25,6 +25,8 @@ defmodule BudgetAppWeb.ExpenseHTML do
         prompt="Choisissez une catégorie"
       />
 
+      <.input field={@form[:shared]} type="checkbox" label="Partager cette dépense" />
+
       <footer class="mt-6 flex flex-wrap gap-3">
         <.button variant="primary">Enregistrer la dépense</.button>
         <.button :if={@return_to} navigate={@return_to}>Annuler</.button>

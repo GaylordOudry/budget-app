@@ -12,14 +12,22 @@ defmodule BudgetApp.Incomes do
 
   def list_incomes(scope) do
     Income
-    |> where([income], income.user_id == ^scope_user_id(scope))
+    |> visible_to_scope(scope)
     |> order_by([income], [desc: income.date, desc: income.id])
     |> Repo.all()
   end
 
   def get_income!(scope, id) do
     Income
-    |> where([income], income.id == ^id and income.user_id == ^scope_user_id(scope))
+    |> visible_to_scope(scope)
+    |> where([income], income.id == ^id)
+    |> Repo.one!()
+  end
+
+  def get_owned_income!(scope, id) do
+    Income
+    |> owned_by_scope(scope)
+    |> where([income], income.id == ^id)
     |> Repo.one!()
   end
 
@@ -50,6 +58,14 @@ defmodule BudgetApp.Incomes do
 
   defp maybe_ensure_owned_by(%schema{id: nil} = struct, _scope) when is_atom(schema), do: struct
   defp maybe_ensure_owned_by(struct, scope), do: ensure_owned_by!(struct, scope)
+
+  defp visible_to_scope(query, scope) do
+    where(query, [schema], schema.user_id == ^scope_user_id(scope) or schema.shared)
+  end
+
+  defp owned_by_scope(query, scope) do
+    where(query, [schema], schema.user_id == ^scope_user_id(scope))
+  end
 
   defp ensure_owned_by!(%schema{user_id: user_id} = struct, scope) when is_atom(schema) do
     if user_id == scope_user_id(scope) do

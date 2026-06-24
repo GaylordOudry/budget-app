@@ -35,7 +35,7 @@ defmodule BudgetAppWeb.IncomeController do
 
   def edit(conn, %{"id" => id}) do
     scope = current_scope(conn)
-    income = Incomes.get_income!(scope, id)
+    income = Incomes.get_owned_income!(scope, id)
     changeset = Incomes.change_income(scope, income)
 
     render(conn, :edit,
@@ -46,7 +46,7 @@ defmodule BudgetAppWeb.IncomeController do
 
   def update(conn, %{"id" => id, "income" => income_params}) do
     scope = current_scope(conn)
-    income = Incomes.get_income!(scope, id)
+    income = Incomes.get_owned_income!(scope, id)
 
     case Incomes.update_income(scope, income, income_params) do
       {:ok, income} ->
@@ -64,7 +64,7 @@ defmodule BudgetAppWeb.IncomeController do
 
   def delete(conn, %{"id" => id}) do
     scope = current_scope(conn)
-    income = Incomes.get_income!(scope, id)
+    income = Incomes.get_owned_income!(scope, id)
     {:ok, _income} = Incomes.delete_income(scope, income)
 
     conn

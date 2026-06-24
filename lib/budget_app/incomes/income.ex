@@ -9,6 +9,7 @@ defmodule BudgetApp.Incomes.Income do
     field :amount, :decimal
     field :currency, :string
     field :created_by, :string
+    field :shared, :boolean, default: false
     belongs_to :user, User
 
     timestamps(type: :utc_datetime)
@@ -16,7 +17,7 @@ defmodule BudgetApp.Incomes.Income do
 
   def changeset(income, attrs, user \\ nil) do
     income
-    |> cast(attrs, [:date, :amount, :currency])
+    |> cast(attrs, [:date, :amount, :currency, :shared])
     |> maybe_put_creator(user)
     |> maybe_put_user(user)
     |> validate_required([:date, :amount, :currency, :created_by, :user_id])

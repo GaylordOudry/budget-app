@@ -35,7 +35,7 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
 
   def edit(conn, %{"id" => id}) do
     scope = current_scope(conn)
-    category = Expenses.get_expense_category!(scope, id)
+    category = Expenses.get_owned_expense_category!(scope, id)
     changeset = Expenses.change_expense_category(scope, category)
 
     render(conn, :edit,
@@ -46,7 +46,7 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
 
   def update(conn, %{"id" => id, "expense_category" => expense_category_params}) do
     scope = current_scope(conn)
-    category = Expenses.get_expense_category!(scope, id)
+    category = Expenses.get_owned_expense_category!(scope, id)
 
     case Expenses.update_expense_category(scope, category, expense_category_params) do
       {:ok, category} ->
@@ -64,7 +64,7 @@ defmodule BudgetAppWeb.ExpenseCategoryController do
 
   def delete(conn, %{"id" => id}) do
     scope = current_scope(conn)
-    category = Expenses.get_expense_category!(scope, id)
+    category = Expenses.get_owned_expense_category!(scope, id)
 
     case Expenses.delete_expense_category(scope, category) do
       {:ok, _category} ->

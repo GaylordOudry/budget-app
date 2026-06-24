@@ -6,7 +6,8 @@ defmodule BudgetAppWeb.IncomeControllerTest do
   @create_attrs %{
     amount: "125.50",
     currency: "EUR",
-    date: "2026-06-21"
+    date: "2026-06-21",
+    shared: "true"
   }
   @update_attrs %{
     amount: "300.00",
@@ -25,14 +26,16 @@ defmodule BudgetAppWeb.IncomeControllerTest do
   describe "index" do
     setup [:register_and_log_in_user]
 
-    test "lists only the connected user's incomes", %{conn: conn, scope: scope} do
+    test "lists the connected user's incomes and shared incomes", %{conn: conn, scope: scope} do
       own_income = income_fixture(%{scope: scope})
-      other_income = income_fixture()
+      shared_income = income_fixture(%{shared: true})
+      other_income = income_fixture(%{shared: false})
 
       conn = get(conn, ~p"/incomes")
       response = html_response(conn, 200)
       assert response =~ "Liste des revenus"
       assert response =~ own_income.created_by
+      assert response =~ shared_income.created_by
       refute response =~ other_income.created_by
       assert_navigation_menu(response)
     end
@@ -43,7 +46,9 @@ defmodule BudgetAppWeb.IncomeControllerTest do
 
     test "renders form", %{conn: conn} do
       conn = get(conn, ~p"/incomes/new")
-      assert html_response(conn, 200) =~ "Nouveau revenu"
+      response = html_response(conn, 200)
+      assert response =~ "Nouveau revenu"
+      assert response =~ "Partager ce revenu"
     end
   end
 
@@ -60,6 +65,7 @@ defmodule BudgetAppWeb.IncomeControllerTest do
       response = html_response(conn, 200)
       assert response =~ "Revenu #{id}"
       assert response =~ user.email
+      assert response =~ "Partagé"
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -82,6 +88,29 @@ defmodule BudgetAppWeb.IncomeControllerTest do
       assert_error_sent 404, fn ->
         get(conn, ~p"/incomes/#{income}")
       end
+    end
+
+    test "returns 404 when editing another user's shared income", %{conn: conn} do
+      income = income_fixture(%{shared: true})
+
+      assert_error_sent 404, fn ->
+        get(conn, ~p"/incomes/#{income}/edit")
+      end
+    end
+  end
+
+  describe "show shared income" do
+    setup [:register_and_log_in_user]
+
+    test "renders another user's shared income without edit actions", %{conn: conn} do
+      income = income_fixture(%{shared: true})
+
+      conn = get(conn, ~p"/incomes/#{income}")
+      response = html_response(conn, 200)
+
+      assert response =~ "Revenu #{income.id}"
+      assert response =~ "Partagé"
+      refute response =~ ~p"/incomes/#{income}/edit"
     end
   end
 

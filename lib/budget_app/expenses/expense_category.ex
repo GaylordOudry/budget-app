@@ -7,6 +7,7 @@ defmodule BudgetApp.Expenses.ExpenseCategory do
 
   schema "expense_categories" do
     field :name, :string
+    field :shared, :boolean, default: false
     belongs_to :user, User
     has_many :expenses, Expense, foreign_key: :category_id
 
@@ -15,7 +16,7 @@ defmodule BudgetApp.Expenses.ExpenseCategory do
 
   def changeset(expense_category, attrs, user \\ nil) do
     expense_category
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :shared])
     |> maybe_put_user(user)
     |> validate_required([:name, :user_id])
     |> foreign_key_constraint(:user_id)

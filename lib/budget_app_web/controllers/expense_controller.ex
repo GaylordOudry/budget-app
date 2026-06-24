@@ -43,7 +43,7 @@ defmodule BudgetAppWeb.ExpenseController do
 
   def edit(conn, %{"id" => id}) do
     scope = current_scope(conn)
-    expense = Expenses.get_expense!(scope, id)
+    expense = Expenses.get_owned_expense!(scope, id)
     changeset = Expenses.change_expense(scope, expense)
 
     render(conn, :edit,
@@ -55,7 +55,7 @@ defmodule BudgetAppWeb.ExpenseController do
 
   def update(conn, %{"id" => id, "expense" => expense_params}) do
     scope = current_scope(conn)
-    expense = Expenses.get_expense!(scope, id)
+    expense = Expenses.get_owned_expense!(scope, id)
 
     case Expenses.update_expense(scope, expense, expense_params) do
       {:ok, expense} ->
@@ -74,7 +74,7 @@ defmodule BudgetAppWeb.ExpenseController do
 
   def delete(conn, %{"id" => id}) do
     scope = current_scope(conn)
-    expense = Expenses.get_expense!(scope, id)
+    expense = Expenses.get_owned_expense!(scope, id)
     {:ok, _expense} = Expenses.delete_expense(scope, expense)
 
     conn

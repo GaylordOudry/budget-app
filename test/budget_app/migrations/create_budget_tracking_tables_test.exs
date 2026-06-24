@@ -10,6 +10,9 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
     assert columns["name"]["is_nullable"] == "NO"
 
     assert columns["user_id"]["data_type"] == "bigint"
+    assert columns["shared"]["data_type"] == "boolean"
+    assert columns["shared"]["is_nullable"] == "NO"
+    assert columns["shared"]["column_default"] == "false"
 
     assert %{
              "column_name" => "user_id",
@@ -21,6 +24,8 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
              String.contains?(index_definition, "UNIQUE INDEX") and
                String.contains?(index_definition, "(user_id, name)")
            end)
+
+    assert has_index?("expense_categories", "(shared)")
   end
 
   test "expenses include the required budget tracking fields" do
@@ -41,6 +46,9 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
     assert columns["user_id"]["data_type"] == "bigint"
     assert columns["category_id"]["data_type"] == "bigint"
     assert columns["category_id"]["is_nullable"] == "NO"
+    assert columns["shared"]["data_type"] == "boolean"
+    assert columns["shared"]["is_nullable"] == "NO"
+    assert columns["shared"]["column_default"] == "false"
 
     assert %{
              "column_name" => "category_id",
@@ -56,6 +64,7 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
 
     assert has_index?("expenses", "(category_id)")
     assert has_index?("expenses", "(user_id, date)")
+    assert has_index?("expenses", "(shared)")
   end
 
   test "incomes include the required budget tracking fields" do
@@ -74,6 +83,9 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
     assert columns["created_by"]["is_nullable"] == "NO"
 
     assert columns["user_id"]["data_type"] == "bigint"
+    assert columns["shared"]["data_type"] == "boolean"
+    assert columns["shared"]["is_nullable"] == "NO"
+    assert columns["shared"]["column_default"] == "false"
 
     assert %{
              "column_name" => "user_id",
@@ -82,6 +94,7 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
            } in foreign_keys("incomes")
 
     assert has_index?("incomes", "(user_id, date)")
+    assert has_index?("incomes", "(shared)")
   end
 
   test "expense categories cannot be deleted while expenses still reference them" do
@@ -89,8 +102,8 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
       SQL.query!(
         Repo,
         """
-        INSERT INTO expense_categories (name, inserted_at, updated_at)
-        VALUES ($1, NOW(), NOW())
+        INSERT INTO expense_categories (name, shared, inserted_at, updated_at)
+        VALUES ($1, false, NOW(), NOW())
         RETURNING id
         """,
         ["Housing"]
@@ -101,8 +114,8 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
     SQL.query!(
       Repo,
       """
-      INSERT INTO expenses (date, amount, currency, created_by, category_id, inserted_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      INSERT INTO expenses (date, amount, currency, created_by, category_id, shared, inserted_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, false, NOW(), NOW())
       """,
       [~D[2026-06-21], Decimal.new("125.50"), "EUR", "owner", category_id]
     )
@@ -117,7 +130,7 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
       SQL.query!(
         Repo,
         """
-        SELECT column_name, data_type, is_nullable, character_maximum_length
+        SELECT column_name, data_type, is_nullable, character_maximum_length, column_default
         FROM information_schema.columns
         WHERE table_schema = 'public' AND table_name = $1
         ORDER BY ordinal_position

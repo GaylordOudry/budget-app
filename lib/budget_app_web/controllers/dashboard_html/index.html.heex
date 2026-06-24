@@ -1,0 +1,172 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <section class="space-y-8">
+    <div class="flex flex-col gap-3 rounded-[2rem] border border-base-300/80 bg-base-100/90 p-8 shadow-sm shadow-base-content/5">
+      <div class="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-primary">
+        <.icon name="hero-chart-bar-square" class="size-5" />
+        Vue d'ensemble
+      </div>
+      <div class="space-y-2">
+        <h1 class="text-3xl font-semibold tracking-tight text-base-content sm:text-4xl">
+          Dashboard partagé
+        </h1>
+        <p class="max-w-3xl text-sm leading-6 text-base-content/70 sm:text-base">
+          Suivez vos dépenses, vos revenus et votre équilibre mois par mois à partir de toutes les données visibles dans votre espace.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section
+        id="dashboard-expense-totals"
+        class="rounded-[2rem] border border-rose-200/80 bg-rose-50/70 p-8 shadow-sm shadow-rose-500/10 transition hover:-translate-y-0.5 hover:shadow-md"
+      >
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-rose-500">Dépenses globales</p>
+            <h2 class="mt-2 text-2xl font-semibold text-rose-700">Vision consolidée</h2>
+          </div>
+          <div class="rounded-full bg-rose-500/10 p-3 text-rose-500">
+            <.icon name="hero-arrow-trending-down" class="size-6" />
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-3">
+          <%= if @expense_totals == [] do %>
+            <p class="rounded-2xl border border-dashed border-rose-300/80 px-4 py-6 text-sm text-rose-600">
+              Aucune dépense visible pour le moment.
+            </p>
+          <% else %>
+            <div :for={total <- @expense_totals} class="rounded-2xl bg-white/80 px-5 py-4">
+              <div class="flex items-baseline justify-between gap-4">
+                <span class="text-sm font-medium uppercase tracking-[0.25em] text-rose-500/80">
+                  {total.currency}
+                </span>
+                <span class="text-2xl font-semibold text-rose-600">
+                  {money_amount(total.total, total.currency)}
+                </span>
+              </div>
+              <p class="mt-2 text-sm text-rose-700/80">
+                {total.count} mouvement<%= if total.count > 1, do: "s" %> visible<%= if total.count > 1, do: "s" %>
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+      <section
+        id="dashboard-income-totals"
+        class="rounded-[2rem] border border-emerald-200/80 bg-emerald-50/70 p-8 shadow-sm shadow-emerald-500/10 transition hover:-translate-y-0.5 hover:shadow-md"
+      >
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-500">Revenus globaux</p>
+            <h2 class="mt-2 text-2xl font-semibold text-emerald-700">Vue des entrées</h2>
+          </div>
+          <div class="rounded-full bg-emerald-500/10 p-3 text-emerald-500">
+            <.icon name="hero-arrow-trending-up" class="size-6" />
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-3">
+          <%= if @income_totals == [] do %>
+            <p class="rounded-2xl border border-dashed border-emerald-300/80 px-4 py-6 text-sm text-emerald-600">
+              Aucun revenu visible pour le moment.
+            </p>
+          <% else %>
+            <div :for={total <- @income_totals} class="rounded-2xl bg-white/80 px-5 py-4">
+              <div class="flex items-baseline justify-between gap-4">
+                <span class="text-sm font-medium uppercase tracking-[0.25em] text-emerald-500/80">
+                  {total.currency}
+                </span>
+                <span class="text-2xl font-semibold text-emerald-600">
+                  {money_amount(total.total, total.currency)}
+                </span>
+              </div>
+              <p class="mt-2 text-sm text-emerald-700/80">
+                {total.count} mouvement<%= if total.count > 1, do: "s" %> visible<%= if total.count > 1, do: "s" %>
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    </div>
+
+    <section
+      id="dashboard-monthly-graph"
+      class="rounded-[2rem] border border-base-300/80 bg-base-100/95 p-8 shadow-sm shadow-base-content/5"
+    >
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
+            Graphique mensuel
+          </p>
+          <h2 class="mt-2 text-2xl font-semibold text-base-content">Comment vous gérez votre argent</h2>
+        </div>
+        <p class="text-sm text-base-content/60">
+          Chaque barre montre le solde du mois après revenus moins dépenses.
+        </p>
+      </div>
+
+      <%= if @monthly_sections == [] do %>
+        <div class="mt-6 rounded-[1.5rem] border border-dashed border-base-300 px-6 py-12 text-center text-sm text-base-content/70">
+          Ajoutez des revenus ou des dépenses pour voir l'évolution mensuelle.
+        </div>
+      <% else %>
+        <div class="mt-8 space-y-8">
+          <section
+            :for={section <- @monthly_sections}
+            id={"monthly-graph-#{section.currency}"}
+            class="rounded-[1.75rem] border border-base-300/70 bg-base-200/30 p-6"
+          >
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-base-content">{section.currency}</h3>
+                <p class="text-sm text-base-content/60">
+                  {length(section.months)} mois suivis dans cette devise.
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-6 overflow-x-auto pb-2">
+              <div class="flex min-w-max items-end gap-4">
+                <div
+                  :for={month <- section.months}
+                  class="flex w-28 shrink-0 flex-col items-center gap-3 rounded-[1.5rem] bg-base-100/80 px-4 py-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div class="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/50">
+                    {month.label}
+                  </div>
+
+                  <div class="flex h-52 w-full items-end justify-center rounded-[1.25rem] bg-base-200/80 px-3 py-3">
+                    <div
+                      class={[
+                        "w-full rounded-t-2xl rounded-b-md shadow-lg transition-all duration-300",
+                        month.positive? && "bg-emerald-500/85 shadow-emerald-500/20",
+                        !month.positive? && "bg-rose-500/85 shadow-rose-500/20"
+                      ]}
+                      style={"height: #{monthly_bar_height(month.absolute_net_total, section.max_absolute_net_total)}%;"}
+                    >
+                    </div>
+                  </div>
+
+                  <div class={[
+                    "text-center text-sm font-semibold",
+                    month.positive? && "text-emerald-600",
+                    !month.positive? && "text-rose-600"
+                  ]}>
+                    {signed_money_amount(month.net_total, section.currency)}
+                  </div>
+
+                  <div class="space-y-1 text-center text-xs text-base-content/60">
+                    <p>Rev. {money_amount(month.income_total, section.currency)}</p>
+                    <p>Dép. {money_amount(month.expense_total, section.currency)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      <% end %>
+    </section>
+  </section>
+</Layouts.app>

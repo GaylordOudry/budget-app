@@ -5,39 +5,61 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
 
   @create_attrs %{
     amount: "125.50",
-    created_by: "owner",
     currency: "EUR",
     date: "2026-06-21"
   }
   @update_attrs %{
     amount: "300.00",
-    created_by: "reviewer",
     currency: "usd",
     date: "2026-06-22"
   }
-  @invalid_attrs %{amount: nil, created_by: nil, currency: nil, date: nil, category_id: nil}
+  @invalid_attrs %{amount: nil, currency: nil, date: nil, category_id: nil}
+
+  describe "authentication" do
+    test "redirects unauthenticated users", %{conn: conn} do
+      conn = get(conn, ~p"/expenses")
+      assert redirected_to(conn) == ~p"/users/log-in"
+    end
+  end
 
   describe "index" do
-    test "lists all expenses", %{conn: conn} do
+    setup [:register_and_log_in_user]
+
+    test "lists only the connected user's expenses", %{conn: conn, scope: scope} do
+      own_category = expense_category_fixture(%{scope: scope, name: "Groceries"})
+      _own_expense = expense_fixture(%{scope: scope, category: own_category})
+      other_category = expense_category_fixture(%{name: "Travel"})
+      _other_expense = expense_fixture(%{category: other_category})
+
       conn = get(conn, ~p"/expenses")
       response = html_response(conn, 200)
-      assert response =~ "Listing expenses"
+      assert response =~ "Liste des dépenses"
+      assert response =~ "Groceries"
+      refute response =~ "Travel"
       assert_navigation_menu(response)
     end
   end
 
   describe "new expense" do
-    test "renders form", %{conn: conn} do
-      _category = expense_category_fixture()
+    setup [:register_and_log_in_user]
+
+    test "renders form with the current user's categories only", %{conn: conn, scope: scope} do
+      _own_category = expense_category_fixture(%{scope: scope, name: "Groceries"})
+      _other_category = expense_category_fixture(%{name: "Travel"})
 
       conn = get(conn, ~p"/expenses/new")
-      assert html_response(conn, 200) =~ "New expense"
+      response = html_response(conn, 200)
+      assert response =~ "Nouvelle dépense"
+      assert response =~ "Groceries"
+      refute response =~ "Travel"
     end
   end
 
   describe "create expense" do
-    test "redirects to show when data is valid", %{conn: conn} do
-      category = expense_category_fixture()
+    setup [:register_and_log_in_user]
+
+    test "redirects to show when data is valid", %{conn: conn, scope: scope, user: user} do
+      category = expense_category_fixture(%{scope: scope})
 
       conn =
         post(conn, ~p"/expenses", expense: Map.put(@create_attrs, :category_id, category.id))
@@ -46,29 +68,39 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       assert redirected_to(conn) == ~p"/expenses/#{id}"
 
       conn = get(conn, ~p"/expenses/#{id}")
-      assert html_response(conn, 200) =~ "Expense #{id}"
+      response = html_response(conn, 200)
+      assert response =~ "Dépense #{id}"
+      assert response =~ user.email
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post(conn, ~p"/expenses", expense: @invalid_attrs)
-      assert html_response(conn, 200) =~ "New expense"
+      assert html_response(conn, 200) =~ "Nouvelle dépense"
     end
   end
 
   describe "edit expense" do
-    setup [:create_expense]
+    setup [:register_and_log_in_user, :create_expense]
 
     test "renders form for editing chosen expense", %{conn: conn, expense: expense} do
       conn = get(conn, ~p"/expenses/#{expense}/edit")
-      assert html_response(conn, 200) =~ "Edit expense"
+      assert html_response(conn, 200) =~ "Editer la dépense"
+    end
+
+    test "returns 404 for another user's expense", %{conn: conn} do
+      expense = expense_fixture()
+
+      assert_error_sent 404, fn ->
+        get(conn, ~p"/expenses/#{expense}")
+      end
     end
   end
 
   describe "update expense" do
-    setup [:create_expense]
+    setup [:register_and_log_in_user, :create_expense]
 
-    test "redirects when data is valid", %{conn: conn, expense: expense} do
-      category = expense_category_fixture()
+    test "redirects when data is valid", %{conn: conn, expense: expense, scope: scope} do
+      category = expense_category_fixture(%{scope: scope})
 
       conn =
         put(conn, ~p"/expenses/#{expense}",
@@ -81,17 +113,16 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       response = html_response(conn, 200)
       assert response =~ "300.00"
       assert response =~ "USD"
-      assert response =~ "reviewer"
     end
 
     test "renders errors when data is invalid", %{conn: conn, expense: expense} do
       conn = put(conn, ~p"/expenses/#{expense}", expense: @invalid_attrs)
-      assert html_response(conn, 200) =~ "Edit expense"
+      assert html_response(conn, 200) =~ "Editer la dépense"
     end
   end
 
   describe "delete expense" do
-    setup [:create_expense]
+    setup [:register_and_log_in_user, :create_expense]
 
     test "deletes chosen expense", %{conn: conn, expense: expense} do
       conn = delete(conn, ~p"/expenses/#{expense}")
@@ -103,8 +134,8 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
     end
   end
 
-  defp create_expense(_) do
-    expense = expense_fixture()
+  defp create_expense(%{scope: scope}) do
+    expense = expense_fixture(%{scope: scope})
     %{expense: expense}
   end
 end

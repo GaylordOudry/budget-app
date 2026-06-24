@@ -5,34 +5,61 @@ defmodule BudgetApp.Incomes do
 
   import Ecto.Query, warn: false
 
+  alias BudgetApp.Accounts.Scope
+  alias BudgetApp.Accounts.User
   alias BudgetApp.Incomes.Income
   alias BudgetApp.Repo
 
-  def list_incomes do
+  def list_incomes(scope) do
     Income
+    |> where([income], income.user_id == ^scope_user_id(scope))
     |> order_by([income], [desc: income.date, desc: income.id])
     |> Repo.all()
   end
 
-  def get_income!(id), do: Repo.get!(Income, id)
+  def get_income!(scope, id) do
+    Income
+    |> where([income], income.id == ^id and income.user_id == ^scope_user_id(scope))
+    |> Repo.one!()
+  end
 
-  def create_income(attrs \\ %{}) do
+  def create_income(scope, attrs \\ %{}) do
     %Income{}
-    |> Income.changeset(attrs)
+    |> Income.changeset(attrs, scope_user(scope))
     |> Repo.insert()
   end
 
-  def update_income(%Income{} = income, attrs) do
+  def update_income(scope, %Income{} = income, attrs) do
     income
-    |> Income.changeset(attrs)
+    |> ensure_owned_by!(scope)
+    |> Income.changeset(attrs, scope_user(scope))
     |> Repo.update()
   end
 
-  def delete_income(%Income{} = income) do
-    Repo.delete(income)
+  def delete_income(scope, %Income{} = income) do
+    income
+    |> ensure_owned_by!(scope)
+    |> Repo.delete()
   end
 
-  def change_income(%Income{} = income, attrs \\ %{}) do
-    Income.changeset(income, attrs)
+  def change_income(scope, %Income{} = income, attrs \\ %{}) do
+    income
+    |> maybe_ensure_owned_by(scope)
+    |> Income.changeset(attrs, scope_user(scope))
   end
+
+  defp maybe_ensure_owned_by(%schema{id: nil} = struct, _scope) when is_atom(schema), do: struct
+  defp maybe_ensure_owned_by(struct, scope), do: ensure_owned_by!(struct, scope)
+
+  defp ensure_owned_by!(%schema{user_id: user_id} = struct, scope) when is_atom(schema) do
+    if user_id == scope_user_id(scope) do
+      struct
+    else
+      raise Ecto.NoResultsError, queryable: schema
+    end
+  end
+
+  defp scope_user(%Scope{user: %User{} = user}), do: user
+
+  defp scope_user_id(%Scope{user: %User{id: user_id}}), do: user_id
 end

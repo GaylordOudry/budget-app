@@ -50,6 +50,7 @@ defmodule BudgetAppWeb.Router do
   scope "/", BudgetAppWeb do
     pipe_through [:browser, :require_authenticated_user]
 
+    get "/dashboard", DashboardController, :index
     resources "/categories", ExpenseCategoryController
     resources "/expenses", ExpenseController
     resources "/incomes", IncomeController

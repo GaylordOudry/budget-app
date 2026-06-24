@@ -13,6 +13,6 @@ defmodule BudgetAppWeb.PageControllerTest do
       |> log_in_user(user_fixture())
       |> get(~p"/")
 
-    assert redirected_to(conn) == ~p"/expenses"
+    assert redirected_to(conn) == ~p"/dashboard"
   end
 end

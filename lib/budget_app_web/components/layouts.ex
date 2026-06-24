@@ -37,6 +37,7 @@ defmodule BudgetAppWeb.Layouts do
   def app(assigns) do
     assigns =
       assign(assigns, :navigation_items, [
+        %{label: "Dashboard", path: ~p"/dashboard"},
         %{label: "Dépenses", path: ~p"/expenses"},
         %{label: "Revenus", path: ~p"/incomes"},
         %{label: "Catégories", path: ~p"/categories"}

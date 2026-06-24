@@ -45,9 +45,7 @@
                   {money_amount(total.total, total.currency)}
                 </span>
               </div>
-              <p class="mt-2 text-sm text-rose-700/80">
-                {total.count} mouvement<%= if total.count > 1, do: "s" %> visible<%= if total.count > 1, do: "s" %>
-              </p>
+              <p class="mt-2 text-sm text-rose-700/80">{visible_movements_label(total.count)}</p>
             </div>
           <% end %>
         </div>
@@ -82,9 +80,7 @@
                   {money_amount(total.total, total.currency)}
                 </span>
               </div>
-              <p class="mt-2 text-sm text-emerald-700/80">
-                {total.count} mouvement<%= if total.count > 1, do: "s" %> visible<%= if total.count > 1, do: "s" %>
-              </p>
+              <p class="mt-2 text-sm text-emerald-700/80">{visible_movements_label(total.count)}</p>
             </div>
           <% end %>
         </div>

@@ -35,4 +35,12 @@ defmodule BudgetAppWeb.DashboardHTML do
       max(18, percentage)
     end
   end
+
+  def visible_movements_label(count) do
+    "visible" <> plural_suffix(count)
+    |> then(&"#{count} mouvement#{plural_suffix(count)} #{&1}")
+  end
+
+  defp plural_suffix(count) when count > 1, do: "s"
+  defp plural_suffix(_count), do: ""
 end

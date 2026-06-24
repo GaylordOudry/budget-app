@@ -1,0 +1,11 @@
+defmodule BudgetAppWeb.HomeController do
+  use BudgetAppWeb, :controller
+
+  def index(conn, _params) do
+    if conn.assigns.current_scope && conn.assigns.current_scope.user do
+      redirect(conn, to: ~p"/expenses")
+    else
+      redirect(conn, to: ~p"/users/log-in")
+    end
+  end
+end

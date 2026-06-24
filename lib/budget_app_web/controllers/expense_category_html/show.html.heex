@@ -5,7 +5,7 @@
       <.button navigate={~p"/categories"}>
         <.icon name="hero-arrow-left" />
       </.button>
-      <.button variant="primary" navigate={~p"/categories/#{@category}/edit"}>
+      <.button :if={@category.user_id == @current_scope.user.id} variant="primary" navigate={~p"/categories/#{@category}/edit"}>
         <.icon name="hero-pencil-square" /> Modifier la catégorie
       </.button>
     </:actions>
@@ -13,5 +13,6 @@
 
   <.list>
     <:item title="Name">{@category.name}</:item>
+    <:item title="Visibilité">{if @category.shared, do: "Partagé", else: "Privé"}</:item>
   </.list>
 </Layouts.app>

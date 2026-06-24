@@ -14,19 +14,22 @@ defmodule BudgetApp.IncomesTest do
       %{scope: user_scope_fixture(), other_scope: user_scope_fixture()}
     end
 
-    test "list_incomes/1 returns scoped incomes ordered by date descending and id descending", %{scope: scope, other_scope: other_scope} do
+    test "list_incomes/1 returns owned and shared incomes ordered by date descending and id descending", %{scope: scope, other_scope: other_scope} do
       older = income_fixture(%{scope: scope, date: ~D[2026-06-20]})
       newer = income_fixture(%{scope: scope, date: ~D[2026-06-21]})
-      _other = income_fixture(%{scope: other_scope, date: ~D[2026-06-22]})
+      shared = income_fixture(%{scope: other_scope, date: ~D[2026-06-22], shared: true})
+      _other = income_fixture(%{scope: other_scope, date: ~D[2026-06-23]})
 
-      assert Incomes.list_incomes(scope) == [newer, older]
+      assert Incomes.list_incomes(scope) == [shared, newer, older]
     end
 
-    test "get_income!/2 returns the scoped income with given id", %{scope: scope, other_scope: other_scope} do
+    test "get_income!/2 returns owned and shared incomes with given id", %{scope: scope, other_scope: other_scope} do
       income = income_fixture(%{scope: scope})
-      other_income = income_fixture(%{scope: other_scope})
+      shared_income = income_fixture(%{scope: other_scope, shared: true})
+      other_income = income_fixture(%{scope: other_scope, shared: false})
 
       assert Incomes.get_income!(scope, income.id) == income
+      assert Incomes.get_income!(scope, shared_income.id) == shared_income
       assert_raise Ecto.NoResultsError, fn -> Incomes.get_income!(scope, other_income.id) end
     end
 
@@ -43,6 +46,20 @@ defmodule BudgetApp.IncomesTest do
       assert income.currency == "EUR"
       assert income.date == ~D[2026-06-21]
       assert income.user_id == scope.user.id
+    end
+
+    test "create_income/2 persists the shared flag", %{scope: scope} do
+      assert {:ok, %Income{} = income} =
+               Incomes.create_income(scope, %{
+                 amount: "125.50",
+                 currency: "EUR",
+                 date: "2026-06-21",
+                 shared: true
+               })
+
+      assert income.shared
+      assert income.user_id == scope.user.id
+      assert income.created_by == scope.user.email
     end
 
     test "create_income/2 with invalid data returns error changeset", %{scope: scope} do

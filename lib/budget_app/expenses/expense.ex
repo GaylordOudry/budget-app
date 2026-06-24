@@ -10,6 +10,7 @@ defmodule BudgetApp.Expenses.Expense do
     field :amount, :decimal
     field :currency, :string
     field :created_by, :string
+    field :shared, :boolean, default: false
     belongs_to :category, ExpenseCategory
     belongs_to :user, User
 
@@ -18,7 +19,7 @@ defmodule BudgetApp.Expenses.Expense do
 
   def changeset(expense, attrs, user \\ nil) do
     expense
-    |> cast(attrs, [:date, :amount, :currency, :category_id])
+    |> cast(attrs, [:date, :amount, :currency, :shared, :category_id])
     |> maybe_put_creator(user)
     |> maybe_put_user(user)
     |> validate_required([:date, :amount, :currency, :created_by, :category_id, :user_id])

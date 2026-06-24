@@ -1,12 +1,14 @@
 defmodule BudgetAppWeb.ExpenseControllerTest do
   use BudgetAppWeb.ConnCase
 
+  import BudgetApp.AccountsFixtures
   import BudgetApp.ExpensesFixtures
 
   @create_attrs %{
     amount: "125.50",
     currency: "EUR",
-    date: "2026-06-21"
+    date: "2026-06-21",
+    shared: "true"
   }
   @update_attrs %{
     amount: "300.00",
@@ -25,16 +27,20 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
   describe "index" do
     setup [:register_and_log_in_user]
 
-    test "lists only the connected user's expenses", %{conn: conn, scope: scope} do
+    test "lists the connected user's expenses and shared expenses", %{conn: conn, scope: scope} do
+      other_scope = user_scope_fixture()
       own_category = expense_category_fixture(%{scope: scope, name: "Groceries"})
       _own_expense = expense_fixture(%{scope: scope, category: own_category})
-      other_category = expense_category_fixture(%{name: "Travel"})
-      _other_expense = expense_fixture(%{category: other_category})
+      shared_category = expense_category_fixture(%{scope: other_scope, name: "Transport", shared: true})
+      _shared_expense = expense_fixture(%{scope: other_scope, category: shared_category, shared: true})
+      other_category = expense_category_fixture(%{scope: other_scope, name: "Travel"})
+      _other_expense = expense_fixture(%{scope: other_scope, category: other_category, shared: false})
 
       conn = get(conn, ~p"/expenses")
       response = html_response(conn, 200)
       assert response =~ "Liste des dépenses"
       assert response =~ "Groceries"
+      assert response =~ "Transport"
       refute response =~ "Travel"
       assert_navigation_menu(response)
     end
@@ -43,15 +49,19 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
   describe "new expense" do
     setup [:register_and_log_in_user]
 
-    test "renders form with the current user's categories only", %{conn: conn, scope: scope} do
+    test "renders form with owned and shared categories only", %{conn: conn, scope: scope} do
+      other_scope = user_scope_fixture()
       _own_category = expense_category_fixture(%{scope: scope, name: "Groceries"})
-      _other_category = expense_category_fixture(%{name: "Travel"})
+      _shared_category = expense_category_fixture(%{scope: other_scope, name: "Transport", shared: true})
+      _other_category = expense_category_fixture(%{scope: other_scope, name: "Travel", shared: false})
 
       conn = get(conn, ~p"/expenses/new")
       response = html_response(conn, 200)
       assert response =~ "Nouvelle dépense"
       assert response =~ "Groceries"
+      assert response =~ "Transport"
       refute response =~ "Travel"
+      assert response =~ "Partager cette dépense"
     end
   end
 
@@ -71,6 +81,7 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       response = html_response(conn, 200)
       assert response =~ "Dépense #{id}"
       assert response =~ user.email
+      assert response =~ "Partagé"
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -93,6 +104,29 @@ defmodule BudgetAppWeb.ExpenseControllerTest do
       assert_error_sent 404, fn ->
         get(conn, ~p"/expenses/#{expense}")
       end
+    end
+
+    test "returns 404 when editing another user's shared expense", %{conn: conn} do
+      expense = expense_fixture(%{shared: true})
+
+      assert_error_sent 404, fn ->
+        get(conn, ~p"/expenses/#{expense}/edit")
+      end
+    end
+  end
+
+  describe "show shared expense" do
+    setup [:register_and_log_in_user]
+
+    test "renders another user's shared expense without edit actions", %{conn: conn} do
+      expense = expense_fixture(%{shared: true})
+
+      conn = get(conn, ~p"/expenses/#{expense}")
+      response = html_response(conn, 200)
+
+      assert response =~ "Dépense #{expense.id}"
+      assert response =~ "Partagé"
+      refute response =~ ~p"/expenses/#{expense}/edit"
     end
   end
 

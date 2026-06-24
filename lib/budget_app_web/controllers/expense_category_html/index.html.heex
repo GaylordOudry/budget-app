@@ -10,16 +10,21 @@
 
   <.table id="categories" rows={@categories} row_click={&JS.navigate(~p"/categories/#{&1}")}>
     <:col :let={category} label="Nom">{category.name}</:col>
+    <:col :let={category} label="Visibilité">{if category.shared, do: "Partagé", else: "Privé"}</:col>
     <:action :let={category}>
       <div class="sr-only">
         <.link navigate={~p"/categories/#{category}"}>Afficher</.link>
       </div>
-      <.link navigate={~p"/categories/#{category}/edit"}>Modifier</.link>
+      <%= if category.user_id == @current_scope.user.id do %>
+        <.link navigate={~p"/categories/#{category}/edit"}>Modifier</.link>
+      <% end %>
     </:action>
     <:action :let={category}>
-      <.link href={~p"/categories/#{category}"} method="delete" data-confirm="Êtes-vous sûr ?">
-        Supprimer
-      </.link>
+      <%= if category.user_id == @current_scope.user.id do %>
+        <.link href={~p"/categories/#{category}"} method="delete" data-confirm="Êtes-vous sûr ?">
+          Supprimer
+        </.link>
+      <% end %>
     </:action>
   </.table>
 </Layouts.app>

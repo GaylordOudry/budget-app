@@ -6,7 +6,7 @@
       <.button navigate={~p"/incomes"}>
         <.icon name="hero-arrow-left" />
       </.button>
-      <.button variant="primary" navigate={~p"/incomes/#{@income}/edit"}>
+      <.button :if={@income.user_id == @current_scope.user.id} variant="primary" navigate={~p"/incomes/#{@income}/edit"}>
         <.icon name="hero-pencil-square" /> Modifier le revenu
       </.button>
     </:actions>
@@ -16,6 +16,7 @@
     <:item title="Date">{@income.date}</:item>
     <:item title="Montant">{Decimal.to_string(@income.amount, :normal)}</:item>
     <:item title="Devise">{@income.currency}</:item>
+    <:item title="Visibilité">{if @income.shared, do: "Partagé", else: "Privé"}</:item>
     <:item title="Créé par">{@income.created_by}</:item>
   </.list>
 </Layouts.app>

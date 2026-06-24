@@ -16,6 +16,8 @@ defmodule BudgetAppWeb.IncomeHTML do
         <.input field={@form[:currency]} type="text" maxlength="3" label="Devise" />
       </div>
 
+      <.input field={@form[:shared]} type="checkbox" label="Partager ce revenu" />
+
       <footer class="mt-6 flex flex-wrap gap-3">
         <.button variant="primary">Enregistrer le revenu</.button>
         <.button :if={@return_to} navigate={@return_to}>Annuler</.button>

@@ -13,7 +13,7 @@ defmodule BudgetApp.Expenses do
 
   def list_expenses(scope) do
     Expense
-    |> where([expense], expense.user_id == ^scope_user_id(scope))
+    |> visible_to_scope(scope)
     |> order_by([expense], [desc: expense.date, desc: expense.id])
     |> preload(:category)
     |> Repo.all()
@@ -21,7 +21,16 @@ defmodule BudgetApp.Expenses do
 
   def get_expense!(scope, id) do
     Expense
-    |> where([expense], expense.id == ^id and expense.user_id == ^scope_user_id(scope))
+    |> visible_to_scope(scope)
+    |> where([expense], expense.id == ^id)
+    |> preload(:category)
+    |> Repo.one!()
+  end
+
+  def get_owned_expense!(scope, id) do
+    Expense
+    |> owned_by_scope(scope)
+    |> where([expense], expense.id == ^id)
     |> preload(:category)
     |> Repo.one!()
   end
@@ -58,7 +67,7 @@ defmodule BudgetApp.Expenses do
 
   def list_expense_categories(scope) do
     ExpenseCategory
-    |> where([expense_category], expense_category.user_id == ^scope_user_id(scope))
+    |> visible_to_scope(scope)
     |> order_by(asc: :name)
     |> Repo.all()
   end
@@ -71,7 +80,15 @@ defmodule BudgetApp.Expenses do
 
   def get_expense_category!(scope, id) do
     ExpenseCategory
-    |> where([expense_category], expense_category.id == ^id and expense_category.user_id == ^scope_user_id(scope))
+    |> visible_to_scope(scope)
+    |> where([expense_category], expense_category.id == ^id)
+    |> Repo.one!()
+  end
+
+  def get_owned_expense_category!(scope, id) do
+    ExpenseCategory
+    |> owned_by_scope(scope)
+    |> where([expense_category], expense_category.id == ^id)
     |> Repo.one!()
   end
 
@@ -104,9 +121,8 @@ defmodule BudgetApp.Expenses do
       category_id ->
         category_exists? =
           ExpenseCategory
-          |> where([expense_category],
-            expense_category.id == ^category_id and expense_category.user_id == ^scope_user_id(scope)
-          )
+          |> visible_to_scope(scope)
+          |> where([expense_category], expense_category.id == ^category_id)
           |> Repo.exists?()
 
         if category_exists? do
@@ -125,6 +141,14 @@ defmodule BudgetApp.Expenses do
 
   defp maybe_ensure_owned_by(%schema{id: nil} = struct, _scope) when is_atom(schema), do: struct
   defp maybe_ensure_owned_by(struct, scope), do: ensure_owned_by!(struct, scope)
+
+  defp visible_to_scope(query, scope) do
+    where(query, [schema], schema.user_id == ^scope_user_id(scope) or schema.shared)
+  end
+
+  defp owned_by_scope(query, scope) do
+    where(query, [schema], schema.user_id == ^scope_user_id(scope))
+  end
 
   defp ensure_owned_by!(%schema{user_id: user_id} = struct, scope) when is_atom(schema) do
     if user_id == scope_user_id(scope) do

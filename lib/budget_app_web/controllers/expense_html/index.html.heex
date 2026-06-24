@@ -13,17 +13,22 @@
     <:col :let={expense} label="Montant">{Decimal.to_string(expense.amount, :normal)}</:col>
     <:col :let={expense} label="Devise">{expense.currency}</:col>
     <:col :let={expense} label="Catégorie">{expense.category.name}</:col>
+    <:col :let={expense} label="Visibilité">{if expense.shared, do: "Partagé", else: "Privé"}</:col>
     <:col :let={expense} label="Créé par">{expense.created_by}</:col>
     <:action :let={expense}>
       <div class="sr-only">
         <.link navigate={~p"/expenses/#{expense}"}>Afficher</.link>
       </div>
-      <.link navigate={~p"/expenses/#{expense}/edit"}>Modifier</.link>
+      <%= if expense.user_id == @current_scope.user.id do %>
+        <.link navigate={~p"/expenses/#{expense}/edit"}>Modifier</.link>
+      <% end %>
     </:action>
     <:action :let={expense}>
-      <.link href={~p"/expenses/#{expense}"} method="delete" data-confirm="Êtes-vous sûr ?">
-        Supprimer
-      </.link>
+      <%= if expense.user_id == @current_scope.user.id do %>
+        <.link href={~p"/expenses/#{expense}"} method="delete" data-confirm="Êtes-vous sûr ?">
+          Supprimer
+        </.link>
+      <% end %>
     </:action>
   </.table>
 </Layouts.app>

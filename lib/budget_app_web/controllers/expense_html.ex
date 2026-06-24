@@ -15,7 +15,6 @@ defmodule BudgetAppWeb.ExpenseHTML do
         <.input field={@form[:date]} type="date" label="Date" />
         <.input field={@form[:amount]} type="number" step="0.01" label="Montant" />
         <.input field={@form[:currency]} type="text" maxlength="3" label="Devise" />
-        <.input field={@form[:created_by]} type="text" label="Créé par" />
       </div>
 
       <.input

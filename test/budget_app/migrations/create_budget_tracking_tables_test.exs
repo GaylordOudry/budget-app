@@ -3,15 +3,23 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
 
   alias Ecto.Adapters.SQL
 
-  test "expense categories support naming budget categories" do
+  test "expense categories support naming budget categories per user" do
     columns = column_details("expense_categories")
 
     assert columns["name"]["data_type"] == "character varying"
     assert columns["name"]["is_nullable"] == "NO"
 
+    assert columns["user_id"]["data_type"] == "bigint"
+
+    assert %{
+             "column_name" => "user_id",
+             "foreign_table_name" => "users",
+             "foreign_column_name" => "id"
+           } in foreign_keys("expense_categories")
+
     assert Enum.any?(index_definitions("expense_categories"), fn index_definition ->
              String.contains?(index_definition, "UNIQUE INDEX") and
-               String.contains?(index_definition, "(name)")
+               String.contains?(index_definition, "(user_id, name)")
            end)
   end
 
@@ -30,6 +38,7 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
     assert columns["created_by"]["data_type"] == "character varying"
     assert columns["created_by"]["is_nullable"] == "NO"
 
+    assert columns["user_id"]["data_type"] == "bigint"
     assert columns["category_id"]["data_type"] == "bigint"
     assert columns["category_id"]["is_nullable"] == "NO"
 
@@ -39,8 +48,14 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
              "foreign_column_name" => "id"
            } in foreign_keys("expenses")
 
+    assert %{
+             "column_name" => "user_id",
+             "foreign_table_name" => "users",
+             "foreign_column_name" => "id"
+           } in foreign_keys("expenses")
+
     assert has_index?("expenses", "(category_id)")
-    assert has_index?("expenses", "(created_by, date)")
+    assert has_index?("expenses", "(user_id, date)")
   end
 
   test "incomes include the required budget tracking fields" do
@@ -58,7 +73,15 @@ defmodule BudgetApp.Migrations.CreateBudgetTrackingTablesTest do
     assert columns["created_by"]["data_type"] == "character varying"
     assert columns["created_by"]["is_nullable"] == "NO"
 
-    assert has_index?("incomes", "(created_by, date)")
+    assert columns["user_id"]["data_type"] == "bigint"
+
+    assert %{
+             "column_name" => "user_id",
+             "foreign_table_name" => "users",
+             "foreign_column_name" => "id"
+           } in foreign_keys("incomes")
+
+    assert has_index?("incomes", "(user_id, date)")
   end
 
   test "expense categories cannot be deleted while expenses still reference them" do

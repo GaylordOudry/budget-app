@@ -21,9 +21,6 @@ defmodule BudgetAppWeb.Router do
     pipe_through :browser
 
     get "/", HomeController, :index
-    resources "/categories", ExpenseCategoryController
-    resources "/expenses", ExpenseController
-    resources "/incomes", IncomeController
   end
 
   # Other scopes may use custom stacks.
@@ -52,6 +49,10 @@ defmodule BudgetAppWeb.Router do
 
   scope "/", BudgetAppWeb do
     pipe_through [:browser, :require_authenticated_user]
+
+    resources "/categories", ExpenseCategoryController
+    resources "/expenses", ExpenseController
+    resources "/incomes", IncomeController
 
     live_session :require_authenticated_user,
       on_mount: [{BudgetAppWeb.UserAuth, :require_authenticated}] do

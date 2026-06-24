@@ -123,14 +123,14 @@ defmodule BudgetApp.Expenses do
 
   defp preload_expense_category({:error, _} = error), do: error
 
-  defp maybe_ensure_owned_by(%schema_module{id: nil} = struct, _scope) when is_atom(schema_module), do: struct
+  defp maybe_ensure_owned_by(%schema{id: nil} = struct, _scope) when is_atom(schema), do: struct
   defp maybe_ensure_owned_by(struct, scope), do: ensure_owned_by!(struct, scope)
 
-  defp ensure_owned_by!(%schema_module{user_id: user_id} = struct, scope) when is_atom(schema_module) do
+  defp ensure_owned_by!(%schema_module{user_id: user_id} = struct, scope) when is_atom(schema) do
     if user_id == scope_user_id(scope) do
       struct
     else
-      raise Ecto.NoResultsError, queryable: schema_module
+      raise Ecto.NoResultsError, queryable: schema
     end
   end
 

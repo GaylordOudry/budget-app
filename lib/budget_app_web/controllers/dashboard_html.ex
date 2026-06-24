@@ -37,8 +37,7 @@ defmodule BudgetAppWeb.DashboardHTML do
   end
 
   def visible_movements_label(count) do
-    "visible" <> plural_suffix(count)
-    |> then(&"#{count} mouvement#{plural_suffix(count)} #{&1}")
+    "#{count} mouvement#{plural_suffix(count)} visible#{plural_suffix(count)}"
   end
 
   defp plural_suffix(count) when count > 1, do: "s"
